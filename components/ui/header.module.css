@@ -1,0 +1,13 @@
+.header {
+  margin: 0;
+  font-family: var(--font-figtree);
+  line-height: 1.6;
+}
+
+.main {
+  font-size: clamp(2.5rem, 2.2rem + 1.5vw, 4rem);
+}
+
+.section {
+  font-size: clamp(2rem, 1.9rem + 0.7vw, 2.5rem);
+}
