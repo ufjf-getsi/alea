@@ -19,7 +19,7 @@ export async function signUpAction(
     name,
     email,
     password,
-    callbackURL: "/dashboard",
+    callbackURL: "/",
   });
 
   if (error) {
