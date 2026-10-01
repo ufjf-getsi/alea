@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth/auth";
 import { signUpSchema } from "@/lib/validations/auth";
-import { AuthState } from "@/actions/auth/authState";
+import type { AuthState } from "@/actions/auth/authState";
 
 export async function signUpAction(
   _previousState: AuthState,

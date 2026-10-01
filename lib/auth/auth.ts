@@ -3,6 +3,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/lib/email/transporter";
 import { verificationEmailTemplate } from "@/lib/email/templates/verificationEmail";
+import { resetPasswordEmailTemplate } from "@/lib/email/templates/resetPasswordEmail";
 
 import { db } from "@/db/db";
 import * as schema from "@/db/auth-schema";
@@ -20,6 +21,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    resetPasswordTokenExpiresIn: 60 * 60,
+    sendResetPassword: async ({ user, url }) => {
+      void sendEmail({
+        to: user.email,
+        subject: "Redefinição de senha",
+        html: resetPasswordEmailTemplate({ name: user.name, url }),
+      });
+    },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {

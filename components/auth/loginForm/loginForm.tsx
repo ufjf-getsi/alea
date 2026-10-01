@@ -3,13 +3,13 @@
 import { useActionState } from "react";
 
 import { loginAction } from "@/actions/auth/loginAction";
-import { initialLoginState } from "@/actions/auth/authState";
+import { initialAuthState } from "@/actions/auth/authState";
 import GoogleLoginButton from "@/components/auth/googleSignUpButton";
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(
     loginAction,
-    initialLoginState,
+    initialAuthState,
   );
 
   return (

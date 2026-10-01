@@ -3,5 +3,4 @@ export type AuthState = {
   success?: boolean;
 };
 
-export const initialLoginState: AuthState = {};
-export const initialSignUpState: AuthState = {};
+export const initialAuthState: AuthState = {};
