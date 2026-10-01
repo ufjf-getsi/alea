@@ -1,17 +1,13 @@
-import { authClient } from "@/lib/auth-client";
+"use server";
+
+import { auth } from "@/lib/auth";
 import { signUpSchema } from "@/lib/validations/auth";
-
-export type SignUpState = {
-  error?: string;
-  success?: boolean;
-};
-
-export const initialSignUpState: SignUpState = {};
+import { AuthState } from "@/actions/auth/authState";
 
 export async function signUpAction(
-  _previousState: SignUpState,
+  _previousState: AuthState,
   formData: FormData,
-): Promise<SignUpState> {
+): Promise<AuthState> {
   const data = Object.fromEntries(formData);
 
   const result = signUpSchema.safeParse(data);
@@ -26,20 +22,25 @@ export async function signUpAction(
 
   const { name, email, password } = result.data;
 
-  const { error } = await authClient.signUp.email({
-    name,
-    email,
-    password,
-    callbackURL: "/",
-  });
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        name,
+        email,
+        password,
+        callbackURL: "/",
+      },
+    });
 
-  if (error) {
     return {
-      error: error.message,
+      success: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Não foi possível criar a conta.",
     };
   }
-
-  return {
-    success: true,
-  };
 }

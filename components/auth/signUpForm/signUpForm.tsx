@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 
-import { initialSignUpState, signUpAction } from "@/actions/auth/signUpAction";
+import { signUpAction } from "@/actions/auth/signUpAction";
+import { initialSignUpState } from "@/actions/auth/authState";
 import GoogleSignUpButton from "@/components/auth/googleSignUpButton";
 
 export default function SignUpForm() {
