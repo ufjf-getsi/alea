@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/lib/email/transporter";
 import { verificationEmailTemplate } from "@/lib/email/templates/verificationEmail";
 
@@ -39,4 +40,5 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  plugins: [nextCookies()],
 });
