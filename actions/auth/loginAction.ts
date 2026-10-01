@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { loginSchema } from "@/lib/validations/auth";
 import { AuthState } from "@/actions/auth/authState";
 
