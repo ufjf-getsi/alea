@@ -23,3 +23,18 @@ export const signUpSchema = z.object({
 });
 
 export type SignUpSchema = z.infer<typeof signUpSchema>;
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "O email é obrigatório.")
+    .pipe(z.email("Informe um email válido.")),
+
+  password: z
+    .string()
+    .min(1, "A senha é obrigatória.")
+    .max(72, "A senha deve ter no máximo 72 caracteres."),
+});
+
+export type LoginSchema = z.infer<typeof loginSchema>;
