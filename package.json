@@ -21,6 +21,7 @@
     "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-icons": "^5.7.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -34,5 +35,5 @@
     "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@12.6.0"
+  "packageManager": "pnpm@12.8.1"
 }
