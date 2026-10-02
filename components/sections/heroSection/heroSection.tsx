@@ -2,7 +2,7 @@ import Image from "next/image";
 import clsx from "clsx";
 
 import placeholder from "@/assets/images/placeholders/landscape.svg";
-import Header from "@/components/ui/header";
+import Header from "@/components/ui/header/header";
 
 import styles from "./heroSection.module.css";
 
