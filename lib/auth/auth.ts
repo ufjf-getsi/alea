@@ -32,7 +32,7 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
+      sendEmail({
         to: user.email,
         subject: "Verifique seu e-mail",
         html: verificationEmailTemplate({
