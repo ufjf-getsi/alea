@@ -19,7 +19,7 @@ export function verificationEmailTemplate({
           </a>
           <p style="color: #666; font-size: 14px;">Ou copie e cole este link no seu navegador:</p>
           <p style="color: #666; font-size: 12px; word-break: break-all;">${url}</p>
-          <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expirará em 24 horas.</p>
+          <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expirará em 1 hora.</p>
     </div>
   `;
 }
