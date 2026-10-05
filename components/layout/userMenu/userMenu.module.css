@@ -1,0 +1,84 @@
+.trigger {
+  anchor-name: --user-menu;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+  color: var(--foreground);
+
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.popover {
+  position: fixed;
+  position-anchor: --user-menu;
+
+  inset: auto;
+
+  top: calc(anchor(bottom) + 0.5rem);
+  right: anchor(right);
+
+  width: 14rem;
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+
+  border-radius: 0.75rem;
+
+  background: var(--background);
+  color: var(--foreground);
+
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.12);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+
+  border: 0;
+  border-radius: 0.5rem;
+
+  background: transparent;
+  color: var(--foreground);
+
+  font: inherit;
+  font-size: 0.95rem;
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.option:hover {
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+}
