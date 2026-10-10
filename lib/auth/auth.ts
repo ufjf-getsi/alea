@@ -7,6 +7,7 @@ import { resetPasswordEmailTemplate } from "@/lib/email/templates/resetPasswordE
 
 import { db } from "@/db/db";
 import * as schema from "@/db/auth-schema";
+import { ROLE_LEVELS } from "@/lib/auth/roles";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -22,6 +23,16 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,
+    },
+  },
+  user: {
+    additionalFields: {
+      roleLevel: {
+        type: "number",
+        required: false,
+        defaultValue: ROLE_LEVELS.USER,
+        input: false,
+      },
     },
   },
   emailAndPassword: {
