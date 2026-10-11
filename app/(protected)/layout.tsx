@@ -1,11 +1,11 @@
-import { requireSession } from "@/lib/auth/requireSession";
+import { requirePermission } from "@/lib/auth/session";
 
 export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireSession();
+  await requirePermission("users:view");
 
   return children;
 }

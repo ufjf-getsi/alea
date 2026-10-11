@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth/requireSession";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function ProfilePage() {
   const { user } = await requireSession();
