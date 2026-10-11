@@ -1,3 +1,10 @@
+import { escapeHtml } from "@/lib/email/escapeHtml";
+import {
+  emailButton,
+  emailFallbackLink,
+  emailLayout,
+} from "@/lib/email/templates/layout";
+
 export function resetPasswordEmailTemplate({
   name,
   url,
@@ -5,21 +12,23 @@ export function resetPasswordEmailTemplate({
   name: string;
   url: string;
 }) {
-  return `
-    <div>
-      <h1>Olá, ${name}!</h1>
+  const html = emailLayout(`
+    <h1 style="font-size:22px;">Olá, ${escapeHtml(name)}!</h1>
+    <p>Recebemos uma solicitação para redefinir a senha da sua conta. Clique no botão abaixo para escolher uma nova senha:</p>
+    ${emailButton(url, "Redefinir senha")}
+    ${emailFallbackLink(url)}
+    <p style="color:#666;font-size:12px;margin-top:30px;">Este link expira em 1 hora.</p>
+    <p style="color:#666;font-size:12px;">Se você não solicitou a redefinição, ignore este e-mail. Sua senha continuará a mesma.</p>
+  `);
 
-      <p>Recebemos uma solicitação para redefinir a senha da sua conta. Clique no botão abaixo para escolher uma nova senha:</p>
+  const text = `Olá, ${name}!
 
-      <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-        Redefinir senha
-      </a>
+Recebemos uma solicitação para redefinir a senha da sua conta. Acesse o link para escolher uma nova senha:
 
-      <p style="color: #666; font-size: 14px;">Ou copie e cole este link no seu navegador:</p>
-      <p style="color: #666; font-size: 12px; word-break: break-all;">${url}</p>
+${url}
 
-      <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expira em 1 hora.</p>
-      <p style="color: #999; font-size: 12px;">Se você não solicitou a redefinição, ignore este e-mail. Sua senha continuará a mesma.</p>
-    </div>
-  `;
+Este link expira em 1 hora.
+Se você não solicitou a redefinição, ignore este e-mail. Sua senha continuará a mesma.`;
+
+  return { html, text };
 }

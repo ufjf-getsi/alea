@@ -1,3 +1,10 @@
+import { escapeHtml } from "@/lib/email/escapeHtml";
+import {
+  emailButton,
+  emailFallbackLink,
+  emailLayout,
+} from "@/lib/email/templates/layout";
+
 export function verificationEmailTemplate({
   name,
   url,
@@ -5,21 +12,23 @@ export function verificationEmailTemplate({
   name: string;
   url: string;
 }) {
-  return `
-    <div>
-      <h1>Olá, ${name}!</h1>
+  const html = emailLayout(`
+    <h1 style="font-size:22px;">Olá, ${escapeHtml(name)}!</h1>
+    <p>Obrigado por criar sua conta. Para completar seu cadastro, verifique seu endereço de e-mail:</p>
+    ${emailButton(url, "Verificar e-mail")}
+    ${emailFallbackLink(url)}
+    <p style="color:#666;font-size:12px;margin-top:30px;">Este link expira em 1 hora.</p>
+    <p style="color:#666;font-size:12px;">Se você não criou esta conta, ignore este e-mail.</p>
+  `);
 
-      <p>
-        Obrigado por criar sua conta.
-      </p>
+  const text = `Olá, ${name}!
 
-      <p>Obrigado por se registrar. Para completar seu cadastro, verifique seu endereço de email clicando no link abaixo:</p>
-          <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-            Verificar Email
-          </a>
-          <p style="color: #666; font-size: 14px;">Ou copie e cole este link no seu navegador:</p>
-          <p style="color: #666; font-size: 12px; word-break: break-all;">${url}</p>
-          <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expirará em 1 hora.</p>
-    </div>
-  `;
+Obrigado por criar sua conta. Para completar seu cadastro, verifique seu e-mail acessando o link:
+
+${url}
+
+Este link expira em 1 hora.
+Se você não criou esta conta, ignore este e-mail.`;
+
+  return { html, text };
 }
