@@ -4,12 +4,13 @@ import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/lib/email/transporter";
 import { verificationEmailTemplate } from "@/lib/email/templates/verificationEmail";
 import { resetPasswordEmailTemplate } from "@/lib/email/templates/resetPasswordEmail";
-
+import { ROLE_LEVELS } from "@/lib/auth/roles";
+import { waitUntil } from "@vercel/functions";
 import { db } from "@/db/db";
 import * as schema from "@/db/auth-schema";
-import { ROLE_LEVELS } from "@/lib/auth/roles";
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -18,12 +19,7 @@ export const auth = betterAuth({
     database: {
       joins: true,
     },
-  },
-  session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60,
-    },
+    backgroundTasks: { handler: waitUntil },
   },
   user: {
     additionalFields: {
@@ -38,33 +34,48 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    revokeSessionsOnPasswordReset: true,
     resetPasswordTokenExpiresIn: 60 * 60,
     sendResetPassword: async ({ user, url }) => {
-      void sendEmail({
-        to: user.email,
-        subject: "Redefinição de senha",
-        html: resetPasswordEmailTemplate({ name: user.name, url }),
-      });
+      waitUntil(
+        sendEmail({
+          to: user.email,
+          subject: "Redefinição de senha",
+          ...resetPasswordEmailTemplate({ name: user.name, url }),
+        }).catch((err) =>
+          console.error("Falha ao enviar e-mail de reset:", err),
+        ),
+      );
     },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      sendEmail({
-        to: user.email,
-        subject: "Verifique seu e-mail",
-        html: verificationEmailTemplate({
-          name: user.name,
-          url,
-        }),
-      });
+      waitUntil(
+        sendEmail({
+          to: user.email,
+          subject: "Verifique seu e-mail",
+          ...verificationEmailTemplate({
+            name: user.name,
+            url,
+          }),
+        }).catch((err) =>
+          console.error("Falha ao enviar e-mail de verificação:", err),
+        ),
+      );
     },
   },
-  baseURL: process.env.BETTER_AUTH_URL,
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
+
   plugins: [nextCookies()],
 });
