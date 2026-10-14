@@ -21,6 +21,19 @@ export const auth = betterAuth({
     },
     backgroundTasks: { handler: waitUntil },
   },
+  rateLimit: {
+    enabled: true,
+    storage: "memory",
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 900, max: 5 },
+      "/sign-up/email": { window: 3600, max: 5 },
+      "/request-password-reset": { window: 3600, max: 3 },
+      "/reset-password": { window: 900, max: 5 },
+      "/send-verification-email": { window: 3600, max: 3 },
+    },
+  },
   user: {
     additionalFields: {
       roleLevel: {
