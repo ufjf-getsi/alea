@@ -9,17 +9,13 @@ export type RoleName = keyof typeof ROLE_LEVELS;
 export type RoleLevel = (typeof ROLE_LEVELS)[RoleName];
 
 export const PERMISSIONS = {
-  "profile:view": ROLE_LEVELS.USER,
-  "maps:view": ROLE_LEVELS.USER,
-  "teams:view": ROLE_LEVELS.USER,
-  "schedule:view": ROLE_LEVELS.USER,
+  "protected-routes:view": ROLE_LEVELS.USER,
 
   "teams:edit": ROLE_LEVELS.EDITOR,
   "schedule:edit": ROLE_LEVELS.EDITOR,
 
   "admin:access": ROLE_LEVELS.ADMIN,
-  "users:view": ROLE_LEVELS.ADMIN,
-  "users:manage-roles": ROLE_LEVELS.ADMIN,
+  "users:manage": ROLE_LEVELS.ADMIN,
 
   "system:configure": ROLE_LEVELS.SUPER_ADMIN,
 } as const;

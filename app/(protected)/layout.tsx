@@ -5,7 +5,6 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requirePermission("users:view");
-
+  await requirePermission("protected-routes:view");
   return children;
 }
