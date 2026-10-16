@@ -3,6 +3,12 @@
 import { auth } from "@/lib/auth/auth";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 import type { AuthState } from "@/actions/auth/authState";
+import {
+  RATE_LIMIT_MESSAGE,
+  getClientIp,
+  isLimited,
+  limiters,
+} from "@/lib/rateLimit";
 
 export async function resetPasswordAction(
   _previousState: AuthState,
@@ -21,6 +27,12 @@ export async function resetPasswordAction(
   }
 
   const { token, password } = result.data;
+
+  const ip = await getClientIp();
+
+  if (await isLimited(limiters.resetPasswordIp, ip)) {
+    return { error: RATE_LIMIT_MESSAGE };
+  }
 
   try {
     await auth.api.resetPassword({
