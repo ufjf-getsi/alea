@@ -3,6 +3,8 @@
 import { auth } from "@/lib/auth/auth";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
 import type { AuthState } from "@/actions/auth/authState";
+import { anyLimited, getClientIp, limiters } from "@/lib/rateLimit";
+import { normalizeEmail } from "@/lib/normalizeEmail";
 
 export async function forgotPasswordAction(
   _previousState: AuthState,
@@ -21,6 +23,17 @@ export async function forgotPasswordAction(
   }
 
   const { email } = result.data;
+
+  const ip = await getClientIp();
+
+  if (
+    await anyLimited([
+      [limiters.forgotPasswordIp, ip],
+      [limiters.forgotPasswordEmail, normalizeEmail(email)],
+    ])
+  ) {
+    return { success: true };
+  }
 
   try {
     await auth.api.requestPasswordReset({
