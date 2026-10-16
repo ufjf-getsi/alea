@@ -3,6 +3,13 @@
 import { auth } from "@/lib/auth/auth";
 import { signUpSchema } from "@/lib/validations/auth";
 import type { AuthState } from "@/actions/auth/authState";
+import {
+  RATE_LIMIT_MESSAGE,
+  anyLimited,
+  getClientIp,
+  limiters,
+} from "@/lib/rateLimit";
+import { normalizeEmail } from "@/lib/normalizeEmail";
 
 export async function signUpAction(
   _previousState: AuthState,
@@ -21,6 +28,17 @@ export async function signUpAction(
   }
 
   const { name, email, password } = result.data;
+
+  const ip = await getClientIp();
+
+  if (
+    await anyLimited([
+      [limiters.signUpIp, ip],
+      [limiters.signUpEmail, normalizeEmail(email)],
+    ])
+  ) {
+    return { error: RATE_LIMIT_MESSAGE };
+  }
 
   try {
     await auth.api.signUpEmail({
