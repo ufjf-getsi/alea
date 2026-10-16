@@ -38,24 +38,24 @@ export const ROUTES = {
   maps: {
     path: "/maps",
     access: "protected",
-    permission: "maps:view",
+    permission: "protected-routes:view",
     navLabel: "Mapas",
   },
   profile: {
     path: "/profile",
     access: "protected",
-    permission: "profile:view",
+    permission: "protected-routes:view",
   },
   teams: {
     path: "/teams",
     access: "protected",
-    permission: "teams:view",
+    permission: "protected-routes:view",
     navLabel: "Equipes",
   },
   schedule: {
     path: "/schedule",
     access: "protected",
-    permission: "schedule:view",
+    permission: "protected-routes:view",
     navLabel: "Agenda",
   },
   admin: {
