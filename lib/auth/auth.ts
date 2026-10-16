@@ -7,6 +7,7 @@ import { resetPasswordEmailTemplate } from "@/lib/email/templates/resetPasswordE
 import { ROLE_LEVELS } from "@/lib/auth/roles";
 import { waitUntil } from "@vercel/functions";
 import { db } from "@/db/db";
+import { consumeAuthRateLimit } from "@/lib/rateLimit";
 import * as schema from "@/db/auth-schema";
 
 export const auth = betterAuth({
@@ -21,17 +22,19 @@ export const auth = betterAuth({
     },
     backgroundTasks: { handler: waitUntil },
   },
+  disabledPaths: [
+    "/sign-in/email",
+    "/sign-up/email",
+    "/request-password-reset",
+    "/reset-password",
+    "/send-verification-email",
+  ],
   rateLimit: {
     enabled: true,
-    storage: "memory",
     window: 60,
     max: 100,
-    customRules: {
-      "/sign-in/email": { window: 900, max: 5 },
-      "/sign-up/email": { window: 3600, max: 5 },
-      "/request-password-reset": { window: 3600, max: 3 },
-      "/reset-password": { window: 900, max: 5 },
-      "/send-verification-email": { window: 3600, max: 3 },
+    customStorage: {
+      consume: (key, rule) => consumeAuthRateLimit(key, rule),
     },
   },
   user: {
