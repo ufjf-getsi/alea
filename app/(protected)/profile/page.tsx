@@ -1,11 +1,14 @@
 import { requireSession } from "@/lib/auth/session";
+import { ChangePasswordForm } from "@/components/auth/changePasswordForm/changePasswordForm";
 
 export default async function ProfilePage() {
   const { user } = await requireSession();
 
   return (
-    <main>
-      <h1>{user.name}</h1>
-    </main>
+    <div>
+      <h1>Ola {user.name}</h1>
+
+      <ChangePasswordForm />
+    </div>
   );
 }
