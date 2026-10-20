@@ -12,7 +12,7 @@ const csp = [
 
   "style-src 'self' 'unsafe-inline'",
 
-  "img-src 'self' data: blob: https://lh3.googleusercontent.com",
+  "img-src 'self' data: blob: https://lh3.googleusercontent.com https://tile.openstreetmap.org https://*.google.com https://*.tile.opentopomap.org https://server.arcgisonline.com",
 
   "font-src 'self'",
 
