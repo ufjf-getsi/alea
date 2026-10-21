@@ -8,7 +8,7 @@ import { ROLE_LEVELS } from "@/lib/auth/roles";
 import { waitUntil } from "@vercel/functions";
 import { db } from "@/db/db";
 import { consumeAuthRateLimit } from "@/lib/rateLimit";
-import * as schema from "@/db/auth-schema";
+import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
