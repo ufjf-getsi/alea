@@ -1,0 +1,9 @@
+.main {
+  box-sizing: border-box;
+  width: 95%;
+  max-width: var(--max-layout);
+  margin: 0 auto;
+  height: calc(100dvh - 6rem);
+  min-height: 30rem;
+  padding: 16px 0;
+}

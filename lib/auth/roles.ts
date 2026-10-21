@@ -10,6 +10,8 @@ export type RoleLevel = (typeof ROLE_LEVELS)[RoleName];
 
 export const PERMISSIONS = {
   "protected-routes:view": ROLE_LEVELS.USER,
+  "maps:view": ROLE_LEVELS.USER,
+  "maps:edit": ROLE_LEVELS.USER,
 
   "teams:edit": ROLE_LEVELS.EDITOR,
   "schedule:edit": ROLE_LEVELS.EDITOR,
