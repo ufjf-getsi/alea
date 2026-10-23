@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "2cb02c0e-4fba-4598-8f25-a52084dea79f",
+  "id": "fe7a79c8-3c5f-4a83-a1ce-3931ef1930df",
   "prevIds": [
-    "07206847-57a6-4eb1-a697-e3cc5c3e621d"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -238,27 +238,14 @@
       "table": "map_marker"
     },
     {
-      "type": "double precision",
+      "type": "geometry(Point,4326)",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "lat",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "map_marker"
-    },
-    {
-      "type": "double precision",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "lng",
+      "name": "geom",
       "entityType": "columns",
       "schema": "public",
       "table": "map_marker"
@@ -329,66 +316,14 @@
       "table": "map_region"
     },
     {
-      "type": "jsonb",
+      "type": "geometry(Polygon,4326)",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "geometry",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "map_region"
-    },
-    {
-      "type": "double precision",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "min_lat",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "map_region"
-    },
-    {
-      "type": "double precision",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "min_lng",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "map_region"
-    },
-    {
-      "type": "double precision",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "max_lat",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "map_region"
-    },
-    {
-      "type": "double precision",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "max_lng",
+      "name": "geom",
       "entityType": "columns",
       "schema": "public",
       "table": "map_region"
@@ -743,14 +678,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "lat",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "lng",
+          "value": "geom",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -760,9 +688,9 @@
       "isUnique": false,
       "where": null,
       "with": "",
-      "method": "btree",
+      "method": "gist",
       "concurrently": false,
-      "name": "map_marker_lat_lng_idx",
+      "name": "map_marker_geom_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "map_marker"
@@ -792,28 +720,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "min_lat",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "max_lat",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "min_lng",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "max_lng",
+          "value": "geom",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -823,9 +730,9 @@
       "isUnique": false,
       "where": null,
       "with": "",
-      "method": "btree",
+      "method": "gist",
       "concurrently": false,
-      "name": "map_region_bbox_idx",
+      "name": "map_region_geom_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "map_region"
@@ -1042,6 +949,13 @@
       "schema": "public",
       "table": "user",
       "entityType": "uniques"
+    },
+    {
+      "value": "ST_IsValid(\"geom\")",
+      "name": "map_region_geom_valid",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "map_region"
     },
     {
       "value": "\"role_level\" between 0 and 100",
