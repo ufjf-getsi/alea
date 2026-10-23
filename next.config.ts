@@ -63,8 +63,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   reactCompiler: true,
-
   poweredByHeader: false,
 
   async headers() {
