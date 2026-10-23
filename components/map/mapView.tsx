@@ -14,31 +14,21 @@ import icon2x from "leaflet/dist/images/marker-icon-2x.png";
 import icon from "leaflet/dist/images/marker-icon.png";
 import shadow from "leaflet/dist/images/marker-shadow.png";
 
-import {
-  createMarker,
-  createRegion,
-  deleteFeature,
-  renameFeature,
-} from "@/actions/maps/mapActions";
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/maps/mapConfig";
-import type {
-  FeatureType,
-  MapData,
-  MapMarker,
-  MapMode,
-  MapRegion,
-  PolygonGeometry,
-} from "@/lib/maps/types";
-import { BaseLayers } from "@/lib/maps/baseLayers";
-import { DrawPanel } from "@/lib/maps/drawPanel";
-import { FeaturePanel } from "@/lib/maps/featurePanel";
+import type { FeatureType, MapMode } from "@/lib/maps/types";
+import { BaseLayers } from "@/components/map/baseLayers";
+import { DrawPanel } from "@/components/map/drawPanel";
+import { FeaturePanel } from "@/components/map/featurePanel";
 import {
   ClickHandler,
   UserLocation,
   ViewportWatcher,
 } from "@/lib/maps/mapInteractions";
-import { MapToolbar } from "@/lib/maps/mapToolbar";
-import { useViewportData } from "@/lib/maps/useViewportData";
+import { MapToolbar } from "@/components/map/mapToolbar";
+import { PersistedLayers } from "@/lib/maps/persistedLayers";
+import { useDrawing } from "@/lib/maps/useDrawing";
+import { useMapFeatures } from "@/lib/maps/useMapFeatures";
+import { errorMessage, useMapMutations } from "@/lib/maps/useMapMutations";
 import styles from "./map.module.css";
 
 // Leaflet's default icons break with bundlers so we point them to the package files
@@ -50,8 +40,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: shadow.src,
 });
 
-const REGION_STYLE = { color: "#2563eb", weight: 2, fillOpacity: 0.2 };
-const SELECTED_STYLE = { color: "#f59e0b", weight: 3, fillOpacity: 0.3 };
 const DRAFT_STYLE = { color: "#16a34a", weight: 2, dashArray: "4 4" };
 const VERTEX_STYLE = {
   color: "#16a34a",
@@ -63,126 +51,88 @@ const VERTEX_STYLE = {
 
 type Selection = { type: FeatureType; id: string };
 
-//[lat, lng] tuple without Leaflet's optional altitude value
-type Point = [number, number];
-
-// GeoJSON ([lng, lat]) -> Leaflet ([lat, lng])
-const toLatLngs = (geometry: PolygonGeometry) =>
-  geometry.coordinates.map((ring) =>
-    ring.map(([lng, lat]) => [lat, lng] as L.LatLngTuple),
-  );
-
-function mergeById<T extends { id: string }>(
-  prev: Map<string, T>,
-  items: T[],
-): Map<string, T> {
-  if (!items.length) return prev;
-  const next = new Map(prev);
-  items.forEach((item) => next.set(item.id, item));
-  return next;
-}
-
 export default function MapView({ canEdit }: { canEdit: boolean }) {
-  const [mode, setMode] = useState<MapMode>("view");
-  const [draft, setDraft] = useState<Point[]>([]);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selection | null>(null);
 
-  const [markers, setMarkers] = useState<Map<string, MapMarker>>(new Map());
-  const [regions, setRegions] = useState<Map<string, MapRegion>>(new Map());
+  const { state: drawState, actions: draw } = useDrawing();
+  const { mode, present: draft } = drawState;
+  const drawing = mode !== "view";
 
-  const handleData = useCallback((data: MapData) => {
-    setMarkers((prev) => mergeById(prev, data.markers));
-    setRegions((prev) => mergeById(prev, data.regions));
-  }, []);
-  const onBoundsChange = useViewportData(handleData);
+  const { features, onBoundsChange } = useMapFeatures();
+  const { createMarker, createRegion, renameFeature, deleteFeature } =
+    useMapMutations();
+  const saving = createMarker.isPending || createRegion.isPending;
 
   const changeMode = (next: MapMode) => {
-    setMode(next);
-    setDraft([]);
+    draw.setMode(next);
     setError(null);
     setSelected(null);
   };
 
-  const handleMapClick = (latlng: L.LatLng) => {
-    const point: Point = [latlng.lat, latlng.lng];
-    setDraft((prev) => (mode === "marker" ? [point] : [...prev, point]));
-  };
+  const handleMapClick = (latlng: L.LatLng) =>
+    draw.addPoint([latlng.lat, latlng.lng]);
 
   const handleSave = async (name: string) => {
-    setSaving(true);
+    if (draft.length === 0) return;
     setError(null);
     try {
       if (mode === "marker") {
         const [lat, lng] = draft[0];
-        const res = await createMarker({ name, lat, lng });
-        if (!res.ok) return setError(res.error);
-        setMarkers((prev) => new Map(prev).set(res.data.id, res.data));
+        await createMarker.mutateAsync({ name, lat, lng });
       } else if (mode === "region") {
-        const res = await createRegion({ name, points: draft });
-        if (!res.ok) return setError(res.error);
-        setRegions((prev) => new Map(prev).set(res.data.id, res.data));
+        await createRegion.mutateAsync({ name, points: draft });
       }
       changeMode("view");
-    } catch {
-      setError("Não foi possível salvar. Tente novamente.");
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      setError(errorMessage(err, "Não foi possível salvar. Tente novamente."));
     }
   };
 
-  const select = (type: FeatureType, id: string) => {
-    if (mode === "view") setSelected({ type, id });
-  };
+  const select = useCallback(
+    (type: FeatureType, id: string) => {
+      if (!drawing) setSelected({ type, id });
+    },
+    [drawing],
+  );
 
+  const list: { id: string; name: string }[] =
+    selected?.type === "marker" ? features.markers : features.regions;
   const selectedItem = selected
-    ? selected.type === "marker"
-      ? markers.get(selected.id)
-      : regions.get(selected.id)
+    ? list.find((item) => item.id === selected.id)
     : undefined;
 
   const handleRename = async (name: string) => {
     if (!selected) return "Nada selecionado.";
-    const res = await renameFeature({ ...selected, name });
-    if (!res.ok) return res.error;
-
-    if (selected.type === "marker") {
-      setMarkers((prev) => {
-        const item = prev.get(selected.id);
-        return item ? new Map(prev).set(item.id, { ...item, name }) : prev;
-      });
-    } else {
-      setRegions((prev) => {
-        const item = prev.get(selected.id);
-        return item ? new Map(prev).set(item.id, { ...item, name }) : prev;
-      });
+    try {
+      await renameFeature.mutateAsync({ ...selected, name });
+      return null;
+    } catch (err) {
+      return errorMessage(err);
     }
-    return null;
   };
 
   const handleDelete = async () => {
     if (!selected) return "Nada selecionado.";
-    const res = await deleteFeature(selected);
-    if (!res.ok) return res.error;
-
-    const remove = <T,>(prev: Map<string, T>) => {
-      const next = new Map(prev);
-      next.delete(selected.id);
-      return next;
-    };
-    if (selected.type === "marker") setMarkers(remove);
-    else setRegions(remove);
-
-    setSelected(null);
-    return null;
+    try {
+      await deleteFeature.mutateAsync(selected);
+      setSelected(null);
+      return null;
+    } catch (err) {
+      return errorMessage(err);
+    }
   };
-
-  const drawing = mode !== "view";
 
   return (
     <div className={styles.wrapper}>
       {canEdit && <MapToolbar mode={mode} onChange={changeMode} />}
+
+      {features.truncated && (
+        <div className={styles.notice} role="status">
+          Há itens demais nesta área e alguns não estão sendo exibidos. Aproxime
+          o zoom para ver todos.
+        </div>
+      )}
 
       <MapContainer
         center={DEFAULT_CENTER}
@@ -194,24 +144,12 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
         <ClickHandler enabled={drawing} onClick={handleMapClick} />
         <UserLocation />
 
-        {[...regions.values()].map((region) => (
-          <Polygon
-            key={region.id}
-            positions={toLatLngs(region.geometry)}
-            pathOptions={
-              selected?.id === region.id ? SELECTED_STYLE : REGION_STYLE
-            }
-            eventHandlers={{ click: () => select("region", region.id) }}
-          />
-        ))}
-
-        {[...markers.values()].map((marker) => (
-          <Marker
-            key={marker.id}
-            position={[marker.lat, marker.lng]}
-            eventHandlers={{ click: () => select("marker", marker.id) }}
-          />
-        ))}
+        <PersistedLayers
+          markers={features.markers}
+          regions={features.regions}
+          selectedId={selected?.id ?? null}
+          onSelect={select}
+        />
 
         {mode === "marker" && draft[0] && (
           <Marker position={draft[0]} opacity={0.7} interactive={false} />
@@ -240,7 +178,7 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
           pointCount={draft.length}
           saving={saving}
           error={error}
-          onUndo={() => setDraft((prev) => prev.slice(0, -1))}
+          onUndo={draw.undo}
           onCancel={() => changeMode("view")}
           onSave={handleSave}
         />

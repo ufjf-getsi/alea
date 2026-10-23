@@ -30,14 +30,20 @@ export function FeaturePanel({
 
   const label = type === "marker" ? "Marcador" : "Região";
   const trimmed = name.trim();
+  const changed = trimmed.length > 0 && trimmed !== initialName.trim();
 
   const run = async (action: () => Promise<string | null>) => {
     setBusy(true);
     setError(null);
-    const err = await action();
-    if (err) setError(err);
-    setBusy(false);
-    setConfirming(false);
+    try {
+      const err = await action();
+      if (err) setError(err);
+    } catch {
+      setError("Não foi possível concluir a operação. Tente novamente.");
+    } finally {
+      setBusy(false);
+      setConfirming(false);
+    }
   };
 
   return (
@@ -63,7 +69,8 @@ export function FeaturePanel({
         onKeyDown={(e) =>
           e.key === "Enter" &&
           canEdit &&
-          trimmed &&
+          changed &&
+          !busy &&
           run(() => onRename(trimmed))
         }
         className={styles.input}
@@ -115,7 +122,7 @@ export function FeaturePanel({
           <button
             type="button"
             onClick={() => run(() => onRename(trimmed))}
-            disabled={busy || !trimmed || trimmed === initialName.trim()}
+            disabled={busy || !changed}
             className={clsx(styles.btn, styles.btnPrimary)}
           >
             {busy && !confirming ? "Salvando…" : "Salvar nome"}

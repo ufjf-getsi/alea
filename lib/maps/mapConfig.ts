@@ -11,6 +11,8 @@ export type TileLayerConfig = {
   subdomains?: string | string[];
 };
 
+export const MAP_CACHE_TAG = "map";
+
 // Add each tile provider's domain to the CSP 'img-src' directive to allow the map tiles to load
 export const TILE_LAYERS: TileLayerConfig[] = [
   {

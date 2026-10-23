@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { QueryProvider } from "@/components/providers/queryProvider";
 import styles from "./map.module.css";
 
 /**
@@ -14,5 +15,9 @@ const MapView = dynamic(() => import("./mapView"), {
 });
 
 export function MapLoader({ canEdit }: { canEdit: boolean }) {
-  return <MapView canEdit={canEdit} />;
+  return (
+    <QueryProvider>
+      <MapView canEdit={canEdit} />
+    </QueryProvider>
+  );
 }

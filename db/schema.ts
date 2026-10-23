@@ -6,8 +6,7 @@ import {
   integer,
   index,
   check,
-  doublePrecision,
-  jsonb,
+  customType,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { PolygonGeometry } from "@/lib/maps/types";
@@ -93,6 +92,18 @@ export const verification = pgTable(
 );
 
 //map models
+export type PointGeometry = { type: "Point"; coordinates: [number, number] }; // [lng, lat]
+
+const geometryColumn = <T>(kind: "Point" | "Polygon") =>
+  customType<{ data: T; driverData: string }>({
+    dataType: () => `geometry(${kind}, 4326)`,
+    toDriver: (value) =>
+      sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(value)}), 4326)`,
+  });
+
+const point = geometryColumn<PointGeometry>("Point");
+const polygon = geometryColumn<PolygonGeometry>("Polygon");
+
 export const mapMarker = pgTable(
   "map_marker",
   {
@@ -100,8 +111,7 @@ export const mapMarker = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: text("name").notNull(),
-    lat: doublePrecision("lat").notNull(),
-    lng: doublePrecision("lng").notNull(),
+    geom: point("geom").notNull(),
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -112,7 +122,7 @@ export const mapMarker = pgTable(
       .notNull(),
   },
   (table) => [
-    index("map_marker_lat_lng_idx").on(table.lat, table.lng),
+    index("map_marker_geom_idx").using("gist", table.geom),
     index("map_marker_created_by_idx").on(table.createdBy),
   ],
 );
@@ -124,11 +134,7 @@ export const mapRegion = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: text("name").notNull(),
-    geometry: jsonb("geometry").$type<PolygonGeometry>().notNull(), // GeoJSON Polygon ([lng, lat])
-    minLat: doublePrecision("min_lat").notNull(),
-    minLng: doublePrecision("min_lng").notNull(),
-    maxLat: doublePrecision("max_lat").notNull(),
-    maxLng: doublePrecision("max_lng").notNull(),
+    geom: polygon("geom").notNull(),
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -139,12 +145,8 @@ export const mapRegion = pgTable(
       .notNull(),
   },
   (table) => [
-    index("map_region_bbox_idx").on(
-      table.minLat,
-      table.maxLat,
-      table.minLng,
-      table.maxLng,
-    ),
+    index("map_region_geom_idx").using("gist", table.geom),
     index("map_region_created_by_idx").on(table.createdBy),
+    check("map_region_geom_valid", sql`ST_IsValid(${table.geom})`),
   ],
 );

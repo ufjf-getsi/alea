@@ -7,14 +7,14 @@ import { CircleMarker, useMap, useMapEvents } from "react-leaflet";
 export function ViewportWatcher({
   onChange,
 }: {
-  onChange: (bounds: L.LatLngBounds) => void;
+  onChange: (bounds: L.LatLngBounds, zoom: number) => void;
 }) {
   const map = useMapEvents({
-    moveend: () => onChange(map.getBounds()),
+    moveend: () => onChange(map.getBounds(), map.getZoom()),
   });
 
   useEffect(() => {
-    onChange(map.getBounds());
+    onChange(map.getBounds(), map.getZoom());
   }, [map, onChange]);
 
   return null;
