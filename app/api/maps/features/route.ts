@@ -1,21 +1,5 @@
-import { z } from "zod";
 import { getTilePayload } from "@/lib/maps/queries";
-import { MAX_TILE_ZOOM } from "@/lib/maps/tiles";
-
-const MAX_SERVED_ZOOM = Math.min(MAX_TILE_ZOOM, 18);
-
-const int = z
-  .string()
-  .regex(/^\d{1,8}$/)
-  .transform(Number);
-
-const tileSchema = z
-  .object({
-    z: int.pipe(z.number().max(MAX_SERVED_ZOOM)),
-    x: int,
-    y: int,
-  })
-  .refine(({ z, x, y }) => x < 2 ** z && y < 2 ** z);
+import { tileSchema } from "@/lib/validations/mapTile";
 
 const stripWeak = (v: string) => v.trim().replace(/^W\//, "");
 

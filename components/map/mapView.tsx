@@ -59,7 +59,7 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
   const { mode, present: draft } = drawState;
   const drawing = mode !== "view";
 
-  const { features, onBoundsChange } = useMapFeatures();
+  const { features, onBoundsChange, zoomedOut } = useMapFeatures();
   const { createMarker, createRegion, renameFeature, deleteFeature } =
     useMapMutations();
   const saving = createMarker.isPending || createRegion.isPending;
@@ -127,7 +127,13 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
     <div className={styles.wrapper}>
       {canEdit && <MapToolbar mode={mode} onChange={changeMode} />}
 
-      {features.truncated && (
+      {zoomedOut && (
+        <div className={styles.notice} role="status">
+          Aproxime o zoom para buscar mais regiões e marcadores.
+        </div>
+      )}
+
+      {!zoomedOut && features.truncated && (
         <div className={styles.notice} role="status">
           Há itens demais nesta área e alguns não estão sendo exibidos. Aproxime
           o zoom para ver todos.

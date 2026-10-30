@@ -12,8 +12,8 @@ import {
   type ViewMarker,
   type ViewRegion,
 } from "./viewModel";
+import { MIN_FETCH_ZOOM, tileZoomFor } from "./mapConfig";
 
-const TILE_ZOOM_OFFSET = 2;
 const DEBOUNCE_MS = 300;
 const STALE_MS = 30_000;
 const REFRESH_MS = 60_000;
@@ -73,6 +73,7 @@ const sameTiles = (a: Tile[], b: Tile[]) =>
 
 export function useMapFeatures() {
   const [tiles, setTiles] = useState<Tile[]>([]);
+  const [zoomedOut, setZoomedOut] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const merged = useQueries({
@@ -82,6 +83,7 @@ export function useMapFeatures() {
       staleTime: STALE_MS,
       gcTime: GC_MS,
       refetchInterval: REFRESH_MS,
+      enabled: !zoomedOut,
     })),
     combine: mergeTiles,
   });
@@ -95,11 +97,18 @@ export function useMapFeatures() {
     });
   }
 
-  // Estável: o ViewportWatcher a usa como dependência de efeito.
   const onBoundsChange = useCallback((bounds: L.LatLngBounds, zoom: number) => {
     if (timer.current) clearTimeout(timer.current);
 
     timer.current = setTimeout(() => {
+      const z = Math.floor(zoom);
+
+      if (z < MIN_FETCH_ZOOM) {
+        setZoomedOut(true);
+        return;
+      }
+
+      setZoomedOut(false);
       const next = tilesForBounds(
         {
           minLat: bounds.getSouth(),
@@ -107,7 +116,7 @@ export function useMapFeatures() {
           maxLat: bounds.getNorth(),
           maxLng: bounds.getEast(),
         },
-        Math.max(0, Math.floor(zoom) - TILE_ZOOM_OFFSET),
+        tileZoomFor(z),
       );
       setTiles((prev) => (sameTiles(prev, next) ? prev : next));
     }, DEBOUNCE_MS);
@@ -120,5 +129,5 @@ export function useMapFeatures() {
     [],
   );
 
-  return { features, onBoundsChange };
+  return { features, onBoundsChange, zoomedOut };
 }

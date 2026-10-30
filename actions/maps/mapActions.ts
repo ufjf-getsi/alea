@@ -37,7 +37,6 @@ async function authorize(permission: Permission) {
 
 type User = NonNullable<Awaited<ReturnType<typeof authorize>>>;
 
-// Só o autor (ou quem tem "users:manage") altera ou exclui.
 function ownedBy(
   table: typeof mapMarker | typeof mapRegion,
   id: string,
@@ -50,14 +49,12 @@ function ownedBy(
   );
 }
 
-// Entrada: [lat, lng] com anel aberto. GeoJSON: [lng, lat] com anel fechado.
 function toPolygon(points: LatLng[]): PolygonGeometry {
   const ring = points.map(([lat, lng]) => [lng, lat] as [number, number]);
   ring.push(ring[0]);
   return { type: "Polygon", coordinates: [ring] };
 }
 
-// O cliente só precisa do id: depois de salvar ele rebusca os tiles visíveis.
 export async function createMarker(
   input: CreateMarkerInput,
 ): Promise<ActionResult<{ id: string }>> {
@@ -100,7 +97,6 @@ export async function createRegion(
     updateTag(MAP_CACHE_TAG);
     return { ok: true, data: row };
   } catch (err) {
-    // A constraint map_region_geom_valid (ST_IsValid) recusa auto-interseção etc.
     if (pgErrorCode(err) === PG_CHECK_VIOLATION)
       return fail(
         "Polígono inválido: as linhas não podem se cruzar nem ficar alinhadas.",
