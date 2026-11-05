@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import L from "leaflet";
-import { Marker, Polygon, Polyline } from "react-leaflet";
+import { Marker, Polygon, Polyline, useMap } from "react-leaflet";
 import type { LatLng, MapMode } from "@/lib/maps/types";
 import styles from "@/components/map/map.module.css";
 
@@ -13,28 +13,60 @@ const DRAFT_STYLE: L.PathOptions = {
   interactive: false,
 };
 
+const EDGE_HIT_STYLE: L.PathOptions = {
+  weight: 28,
+  opacity: 0,
+  className: styles.edgeHit,
+  bubblingMouseEvents: false,
+};
+
 const handleIcon = (inner: string) =>
   L.divIcon({
     className: styles.handle,
     html: `<span class="${inner}"></span>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
   });
 
 const VERTEX_ICON = handleIcon(styles.vertex);
 const VERTEX_SELECTED_ICON = handleIcon(
   `${styles.vertex} ${styles.vertexSelected}`,
 );
-const MIDPOINT_ICON = handleIcon(styles.midpoint);
 
-const midpoint = (a: LatLng, b: LatLng): LatLng => [
-  (a[0] + b[0]) / 2,
-  (a[1] + b[1]) / 2,
-];
+type EdgeHitLayerProps = {
+  points: LatLng[];
+  onInsert: (index: number, point: LatLng) => void;
+};
+
+function EdgeHitLayer({ points, onInsert }: EdgeHitLayerProps) {
+  const map = useMap();
+
+  const insertAt = (edge: number, e: L.LeafletMouseEvent) => {
+    const a = map.latLngToLayerPoint(points[edge]);
+    const b = map.latLngToLayerPoint(points[(edge + 1) % points.length]);
+    const projected = L.LineUtil.closestPointOnSegment(e.layerPoint, a, b);
+    const ll = map.layerPointToLatLng(projected).wrap();
+    onInsert(edge + 1, [ll.lat, ll.lng]);
+  };
+
+  return (
+    <>
+      {points.map((p, i) => (
+        <Polyline
+          key={`e-${i}`}
+          positions={[p, points[(i + 1) % points.length]]}
+          pathOptions={EDGE_HIT_STYLE}
+          eventHandlers={{ click: (e) => insertAt(i, e) }}
+        />
+      ))}
+    </>
+  );
+}
 
 type DraftLayerProps = {
   mode: Exclude<MapMode, "view">;
   points: LatLng[];
+  editing: boolean;
   selectedVertex: number | null;
   onMove: (index: number, point: LatLng) => void;
   onInsert: (index: number, point: LatLng) => void;
@@ -44,6 +76,7 @@ type DraftLayerProps = {
 export function DraftLayer({
   mode,
   points,
+  editing,
   selectedVertex,
   onMove,
   onInsert,
@@ -51,14 +84,6 @@ export function DraftLayer({
 }: DraftLayerProps) {
   const [drag, setDrag] = useState<{ index: number; point: LatLng } | null>(
     null,
-  );
-
-  const mids = useMemo(
-    () =>
-      points.length >= 3
-        ? points.map((p, i) => midpoint(p, points[(i + 1) % points.length]))
-        : [],
-    [points],
   );
 
   const commitDrag = (index: number) => (e: L.LeafletEvent) => {
@@ -83,6 +108,8 @@ export function DraftLayer({
     ? points.map((p, i) => (i === drag.index ? drag.point : p))
     : points;
 
+  const edgeInsertEnabled = editing && !drag && points.length >= 3;
+
   return (
     <>
       {shown.length === 2 && (
@@ -92,16 +119,9 @@ export function DraftLayer({
         <Polygon positions={shown} pathOptions={DRAFT_STYLE} />
       )}
 
-      {!drag &&
-        mids.map((mid, i) => (
-          <Marker
-            key={`m-${i}`}
-            position={mid}
-            icon={MIDPOINT_ICON}
-            zIndexOffset={-100}
-            eventHandlers={{ click: () => onInsert(i + 1, mid) }}
-          />
-        ))}
+      {edgeInsertEnabled && (
+        <EdgeHitLayer points={points} onInsert={onInsert} />
+      )}
 
       {points.map((p, i) => {
         const selected = i === selectedVertex;

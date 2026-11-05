@@ -236,6 +236,7 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
           <DraftLayer
             mode={mode}
             points={draft}
+            editing={editing}
             selectedVertex={selectedVertex}
             onMove={draw.moveVertex}
             onInsert={draw.insertVertex}
