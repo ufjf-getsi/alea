@@ -4,14 +4,18 @@ import { useState } from "react";
 import clsx from "clsx";
 import { LuX } from "react-icons/lu";
 import type { FeatureType } from "@/lib/maps/types";
+import { PanelShell } from "@/components/map/panels/panelShell";
 import styles from "@/components/map/map.module.css";
 
 type FeaturePanelProps = {
   type: FeatureType;
   initialName: string;
   canEdit: boolean;
+  minimized: boolean;
+  onToggleMinimized: () => void;
   onClose: () => void;
   onRename: (name: string) => Promise<string | null>;
+  onEditGeometry: () => Promise<string | null>;
   onDelete: () => Promise<string | null>;
 };
 
@@ -19,8 +23,11 @@ export function FeaturePanel({
   type,
   initialName,
   canEdit,
+  minimized,
+  onToggleMinimized,
   onClose,
   onRename,
+  onEditGeometry,
   onDelete,
 }: FeaturePanelProps) {
   const [name, setName] = useState(initialName);
@@ -47,9 +54,14 @@ export function FeaturePanel({
   };
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>{label}</h2>
+    <PanelShell
+      title={label}
+      minimized={minimized}
+      onToggleMinimized={onToggleMinimized}
+      summary={
+        error ? <span className={styles.error}>{error}</span> : initialName
+      }
+      headerActions={
         <button
           type="button"
           onClick={onClose}
@@ -58,8 +70,8 @@ export function FeaturePanel({
         >
           <LuX size={18} />
         </button>
-      </div>
-
+      }
+    >
       <input
         type="text"
         value={name}
@@ -86,6 +98,21 @@ export function FeaturePanel({
       >
         Preencher formulário
       </button>
+
+      {canEdit && (
+        <button
+          type="button"
+          onClick={() => run(onEditGeometry)}
+          disabled={busy}
+          className={clsx(styles.btn, styles.btnSecondary)}
+        >
+          {busy && !confirming
+            ? "Carregando…"
+            : type === "marker"
+              ? "Mover marcador"
+              : "Editar vértices"}
+        </button>
+      )}
 
       {canEdit && (
         <div className={styles.actions}>
@@ -129,6 +156,6 @@ export function FeaturePanel({
           </button>
         </div>
       )}
-    </div>
+    </PanelShell>
   );
 }

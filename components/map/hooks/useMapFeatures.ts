@@ -3,26 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type L from "leaflet";
 import { useQueries, type UseQueryResult } from "@tanstack/react-query";
-import type { MapData } from "./types";
-import { tileId, tilesForBounds, type Tile } from "./tiles";
+import type { MapData } from "@/lib/maps/types";
+import { tileId, tilesForBounds, type Tile } from "@/lib/maps/tiles";
+import { mapKeys } from "@/lib/maps/queryKeys";
 import {
   EMPTY_VIEW_DATA,
   toViewData,
   type ViewData,
   type ViewMarker,
   type ViewRegion,
-} from "./viewModel";
-import { MIN_FETCH_ZOOM, tileZoomFor } from "./mapConfig";
+} from "@/lib/maps/viewModel";
+import { MIN_FETCH_ZOOM, tileZoomFor } from "@/lib/maps/mapConfig";
 
 const DEBOUNCE_MS = 300;
 const STALE_MS = 30_000;
 const REFRESH_MS = 60_000;
 const GC_MS = 5 * 60_000;
-
-export const mapKeys = {
-  tiles: ["map", "tiles"] as const,
-  tile: ({ z, x, y }: Tile) => ["map", "tiles", z, x, y] as const,
-};
 
 async function fetchTile(tile: Tile, signal: AbortSignal): Promise<ViewData> {
   const { z, x, y } = tile;
@@ -60,7 +56,7 @@ function mergeTiles(results: UseQueryResult<ViewData, Error>[]): Merged {
   };
 }
 
-const sameItems = <T,>(a: T[], b: T[]) =>
+const sameItems = <T>(a: T[], b: T[]) =>
   a.length === b.length && a.every((item, i) => item === b[i]);
 
 const sameView = (a: ViewData, b: ViewData) =>

@@ -5,17 +5,22 @@ import {
   createMarker as createMarkerAction,
   createRegion as createRegionAction,
   deleteFeature as deleteFeatureAction,
+  getRegionPoints as getRegionPointsAction,
+  moveMarker as moveMarkerAction,
   renameFeature as renameFeatureAction,
+  updateRegionGeometry as updateRegionGeometryAction,
 } from "@/actions/maps/mapActions";
 import type {
   CreateMarkerInput,
   CreateRegionInput,
   DeleteFeatureInput,
+  MoveMarkerInput,
   RenameFeatureInput,
-} from "@/lib/validations/map";
-import type { ActionResult } from "./types";
-import { mapKeys } from "./useMapFeatures";
-import type { ViewData } from "./viewModel";
+  UpdateRegionGeometryInput,
+} from "@/lib/validations/maps";
+import type { ActionResult, LatLng } from "@/lib/maps/types";
+import { mapKeys } from "@/lib/maps/queryKeys";
+import type { ViewData } from "@/lib/maps/viewModel";
 
 class ActionError extends Error {}
 
@@ -74,5 +79,44 @@ export function useMapMutations() {
     },
   });
 
-  return { createMarker, createRegion, renameFeature, deleteFeature };
+  const moveMarker = useMutation({
+    mutationFn: (input: MoveMarkerInput) => unwrap(moveMarkerAction(input)),
+    onSuccess: (_data, { id, lat, lng }) => {
+      patch((d) => ({
+        ...d,
+        markers: d.markers.map((m) =>
+          m.id === id ? { ...m, position: [lat, lng] as LatLng } : m,
+        ),
+      }));
+      void invalidate();
+    },
+  });
+
+  const updateRegionGeometry = useMutation({
+    mutationFn: (input: UpdateRegionGeometryInput) =>
+      unwrap(updateRegionGeometryAction(input)),
+    onSuccess: (_data, { id, points }) => {
+      patch((d) => ({
+        ...d,
+        regions: d.regions.map((r) =>
+          r.id === id ? { ...r, positions: [points] } : r,
+        ),
+      }));
+      void invalidate();
+    },
+  });
+
+  const loadRegionPoints = useMutation({
+    mutationFn: (id: string) => unwrap(getRegionPointsAction({ id })),
+  });
+
+  return {
+    createMarker,
+    createRegion,
+    moveMarker,
+    updateRegionGeometry,
+    loadRegionPoints,
+    renameFeature,
+    deleteFeature,
+  };
 }

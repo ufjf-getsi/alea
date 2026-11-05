@@ -73,15 +73,15 @@
 
 .panel {
   position: absolute;
-  bottom: 16px;
+  bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: min(92%, 26rem);
-  padding: 16px;
+  width: min(92%, 22rem);
+  padding: 12px 16px 16px;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -224,4 +224,133 @@
   color: #b45309;
   font-size: 13px;
   text-align: center;
+}
+
+@media (min-width: 640px) {
+  .panel {
+    bottom: 16px;
+    left: 12px;
+    transform: none;
+  }
+}
+
+.panelMin {
+  gap: 0;
+  padding: 8px 8px 8px 12px;
+}
+
+.panelBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.panelBar > .panelTitle {
+  margin-right: auto;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.summary .error {
+  display: inline;
+  font-size: 13px;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btnSm {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.closeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+}
+
+.vertex {
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #16a34a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  transition: transform 0.1s;
+}
+
+.handle:hover .vertex {
+  transform: scale(1.25);
+}
+
+.vertexSelected {
+  background: #16a34a;
+  border-color: #fff;
+  box-shadow: 0 0 0 2px #16a34a;
+}
+
+.midpoint {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid #16a34a;
+  opacity: 0.7;
+  cursor: copy;
+  transition:
+    transform 0.1s,
+    opacity 0.1s;
+}
+
+.handle:hover .midpoint {
+  opacity: 1;
+  transform: scale(1.4);
+}
+
+.locateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+
+.locateBtn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.locateBtn:disabled {
+  opacity: 0.5;
+  cursor: progress;
 }

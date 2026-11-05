@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useReducer } from "react";
-import { drawReducer, initialDrawState } from "./drawState";
-import type { LatLng, MapMode } from "./types";
+import { drawReducer, initialDrawState } from "@/lib/maps/drawState";
+import type { LatLng, MapMode } from "@/lib/maps/types";
 
 export function useDrawing() {
   const [state, dispatch] = useReducer(drawReducer, initialDrawState);

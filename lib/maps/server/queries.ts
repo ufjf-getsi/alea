@@ -4,10 +4,10 @@ import { cacheLife, cacheTag } from "next/cache";
 import { asc, desc, sql } from "drizzle-orm";
 import { db } from "@/db/db";
 import { mapMarker, mapRegion } from "@/db/schema";
-import { MAP_CACHE_TAG } from "./mapConfig";
+import { MAP_CACHE_TAG } from "@/lib/maps/mapConfig";
 import { markerCols, parseGeoJSON } from "./projections";
-import { tileBBox } from "./tiles";
-import type { BBox, MapData } from "./types";
+import { tileBBox } from "@/lib/maps/tiles";
+import type { BBox, MapData } from "@/lib/maps/types";
 
 const MAX_RESULTS = 500;
 const TOLERANCE_DIVISOR = 2048;

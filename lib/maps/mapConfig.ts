@@ -1,14 +1,7 @@
 export const DEFAULT_CENTER: [number, number] = [-21.7615, -43.3498]; // Juiz de Fora
 export const DEFAULT_ZOOM = 13;
 
-export const TILE_ZOOM_OFFSET = 2;
-
-export const tileZoomFor = (mapZoom: number) =>
-  Math.max(0, mapZoom - TILE_ZOOM_OFFSET);
-
-export const MIN_FETCH_ZOOM = 10;
-
-export const MIN_TILE_ZOOM = tileZoomFor(MIN_FETCH_ZOOM);
+export const MAP_CACHE_TAG = "map";
 
 export type TileLayerConfig = {
   id: string;
@@ -20,7 +13,7 @@ export type TileLayerConfig = {
   subdomains?: string | string[];
 };
 
-export const MAP_CACHE_TAG = "map";
+const DEFAULT_LAYER_MAX_ZOOM = 18; // Leaflet's default
 
 // Add each tile provider's domain to the CSP 'img-src' directive to allow the map tiles to load
 export const TILE_LAYERS: TileLayerConfig[] = [
@@ -90,3 +83,16 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   //   maxZoom: 18,
   // },
 ];
+
+export const MAX_MAP_ZOOM = Math.max(
+  ...TILE_LAYERS.map((l) => l.maxZoom ?? DEFAULT_LAYER_MAX_ZOOM),
+);
+export const MIN_FETCH_ZOOM = 10;
+
+export const TILE_ZOOM_OFFSET = 2;
+
+export const tileZoomFor = (mapZoom: number) =>
+  Math.max(0, mapZoom - TILE_ZOOM_OFFSET);
+
+export const MIN_TILE_ZOOM = tileZoomFor(MIN_FETCH_ZOOM);
+export const MAX_TILE_ZOOM = tileZoomFor(MAX_MAP_ZOOM);

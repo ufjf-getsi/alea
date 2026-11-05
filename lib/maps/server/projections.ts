@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { mapMarker } from "@/db/schema";
-import type { PolygonGeometry } from "./types";
+import type { PolygonGeometry } from "../types";
 
 export const markerCols = {
   id: mapMarker.id,

@@ -1,5 +1,5 @@
-import { getTilePayload } from "@/lib/maps/queries";
-import { tileSchema } from "@/lib/validations/mapTile";
+import { getTilePayload } from "@/lib/maps/server/queries";
+import { tileSchema } from "@/lib/validations/maps";
 
 const stripWeak = (v: string) => v.trim().replace(/^W\//, "");
 

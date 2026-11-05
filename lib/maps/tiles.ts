@@ -2,7 +2,6 @@ import type { BBox } from "./types";
 
 export type Tile = { z: number; x: number; y: number };
 
-export const MAX_TILE_ZOOM = 22;
 const MAX_LAT = 85.0511287798; // map projection limit
 
 const clamp = (v: number, min: number, max: number) =>
