@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { mapMarker, mapRegion, type PointGeometry } from "@/db/schema";
 import { db } from "@/db/db";
 import { getFreshSession } from "@/lib/auth/session";
@@ -9,18 +9,30 @@ import {
   createMarkerSchema,
   createRegionSchema,
   deleteFeatureSchema,
+  moveMarkerSchema,
+  regionIdSchema,
   renameFeatureSchema,
+  updateRegionGeometrySchema,
   type CreateMarkerInput,
   type CreateRegionInput,
   type DeleteFeatureInput,
+  type MoveMarkerInput,
+  type RegionIdInput,
   type RenameFeatureInput,
-} from "@/lib/validations/map";
+  type UpdateRegionGeometryInput,
+} from "@/lib/validations/maps";
 import type { ActionResult, LatLng, PolygonGeometry } from "@/lib/maps/types";
+import { ringToVertices } from "@/lib/maps/drawState";
+import { parseGeoJSON } from "@/lib/maps/server/projections";
 import { updateTag } from "next/cache";
 import { MAP_CACHE_TAG } from "@/lib/maps/mapConfig";
 
 const fail = (error: string) => ({ ok: false, error }) as const;
 const DENIED = fail("Sem permissão.");
+const NOT_FOUND = fail("Item não encontrado ou sem permissão.");
+const INVALID_POLYGON = fail(
+  "Polígono inválido: as linhas não podem se cruzar nem ficar alinhadas.",
+);
 
 const PG_CHECK_VIOLATION = "23514";
 
@@ -97,10 +109,7 @@ export async function createRegion(
     updateTag(MAP_CACHE_TAG);
     return { ok: true, data: row };
   } catch (err) {
-    if (pgErrorCode(err) === PG_CHECK_VIOLATION)
-      return fail(
-        "Polígono inválido: as linhas não podem se cruzar nem ficar alinhadas.",
-      );
+    if (pgErrorCode(err) === PG_CHECK_VIOLATION) return INVALID_POLYGON;
     throw err;
   }
 }
@@ -123,7 +132,7 @@ export async function renameFeature(
     .where(ownedBy(table, id, user))
     .returning({ id: table.id });
 
-  if (!updated.length) return fail("Item não encontrado ou sem permissão.");
+  if (!updated.length) return NOT_FOUND;
   updateTag(MAP_CACHE_TAG);
   return { ok: true, data: null };
 }
@@ -144,7 +153,84 @@ export async function deleteFeature(
     .where(ownedBy(table, id, user))
     .returning({ id: table.id });
 
-  if (!deleted.length) return fail("Item não encontrado ou sem permissão.");
+  if (!deleted.length) return NOT_FOUND;
   updateTag(MAP_CACHE_TAG);
   return { ok: true, data: null };
+}
+
+export async function moveMarker(
+  input: MoveMarkerInput,
+): Promise<ActionResult> {
+  const user = await authorize("maps:edit");
+  if (!user) return DENIED;
+
+  const parsed = moveMarkerSchema.safeParse(input);
+  if (!parsed.success)
+    return fail(parsed.error.issues[0]?.message ?? "Dados inválidos.");
+  const { id, lat, lng } = parsed.data;
+
+  const geom: PointGeometry = { type: "Point", coordinates: [lng, lat] };
+  const updated = await db
+    .update(mapMarker)
+    .set({ geom })
+    .where(ownedBy(mapMarker, id, user))
+    .returning({ id: mapMarker.id });
+
+  if (!updated.length) return NOT_FOUND;
+  updateTag(MAP_CACHE_TAG);
+  return { ok: true, data: null };
+}
+
+export async function updateRegionGeometry(
+  input: UpdateRegionGeometryInput,
+): Promise<ActionResult> {
+  const user = await authorize("maps:edit");
+  if (!user) return DENIED;
+
+  const parsed = updateRegionGeometrySchema.safeParse(input);
+  if (!parsed.success)
+    return fail(parsed.error.issues[0]?.message ?? "Dados inválidos.");
+  const { id, points } = parsed.data;
+
+  try {
+    const updated = await db
+      .update(mapRegion)
+      .set({ geom: toPolygon(points) })
+      .where(ownedBy(mapRegion, id, user))
+      .returning({ id: mapRegion.id });
+
+    if (!updated.length) return NOT_FOUND;
+    updateTag(MAP_CACHE_TAG);
+    return { ok: true, data: null };
+  } catch (err) {
+    if (pgErrorCode(err) === PG_CHECK_VIOLATION) return INVALID_POLYGON;
+    throw err;
+  }
+}
+
+export async function getRegionPoints(
+  input: RegionIdInput,
+): Promise<ActionResult<{ points: LatLng[] }>> {
+  const user = await authorize("maps:edit");
+  if (!user) return DENIED;
+
+  const parsed = regionIdSchema.safeParse(input);
+  if (!parsed.success) return fail("Dados inválidos.");
+
+  const [row] = await db
+    .select({
+      geometry: sql`ST_AsGeoJSON(${mapRegion.geom})`
+        .mapWith(parseGeoJSON)
+        .as("geometry"),
+    })
+    .from(mapRegion)
+    .where(ownedBy(mapRegion, parsed.data.id, user))
+    .limit(1);
+
+  if (!row) return NOT_FOUND;
+
+  const ring = row.geometry.coordinates[0].map(
+    ([lng, lat]) => [lat, lng] as LatLng,
+  );
+  return { ok: true, data: { points: ringToVertices(ring) } };
 }
