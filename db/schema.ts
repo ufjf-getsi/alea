@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { PolygonGeometry } from "@/lib/maps/types";
+import { Geometry } from "wkx";
 
 //auth models
 export const user = pgTable(
@@ -99,8 +100,18 @@ const geometryColumn = <T>(kind: "Point" | "Polygon") =>
     dataType: () => `geometry(${kind}, 4326)`,
     toDriver: (value) =>
       sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(value)}), 4326)`,
+    fromDriver: (value) => {
+      const geo = Geometry.parse(Buffer.from(value, "hex")).toGeoJSON() as {
+        type: string;
+      };
+      if (geo.type !== kind) {
+        throw new Error(
+          `Geometria inesperada: esperava ${kind}, veio ${geo.type}.`,
+        );
+      }
+      return geo as unknown as T;
+    },
   });
-
 const point = geometryColumn<PointGeometry>("Point");
 const polygon = geometryColumn<PolygonGeometry>("Polygon");
 
