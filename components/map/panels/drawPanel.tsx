@@ -14,7 +14,6 @@ type DrawPanelProps = {
   canRedo: boolean;
   canRemoveVertex: boolean;
   saving: boolean;
-  error: string | null;
   minimized: boolean;
   onToggleMinimized: () => void;
   onUndo: () => void;
@@ -32,7 +31,6 @@ export function DrawPanel({
   canRedo,
   canRemoveVertex,
   saving,
-  error,
   minimized,
   onToggleMinimized,
   onUndo,
@@ -83,9 +81,7 @@ export function DrawPanel({
       title={title}
       minimized={minimized}
       onToggleMinimized={onToggleMinimized}
-      summary={
-        error ? <span className={styles.error}>{error}</span> : summaryText
-      }
+      summary={summaryText}
       compactActions={
         <>
           <button
@@ -122,8 +118,6 @@ export function DrawPanel({
           className={styles.input}
         />
       )}
-
-      {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.actions}>
         <div className={styles.actionGroup}>

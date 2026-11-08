@@ -14,9 +14,9 @@ type FeaturePanelProps = {
   minimized: boolean;
   onToggleMinimized: () => void;
   onClose: () => void;
-  onRename: (name: string) => Promise<string | null>;
-  onEditGeometry: () => Promise<string | null>;
-  onDelete: () => Promise<string | null>;
+  onRename: (name: string) => Promise<void>;
+  onEditGeometry: () => Promise<void>;
+  onDelete: () => Promise<void>;
 };
 
 export function FeaturePanel({
@@ -33,20 +33,15 @@ export function FeaturePanel({
   const [name, setName] = useState(initialName);
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const label = type === "marker" ? "Marcador" : "Região";
   const trimmed = name.trim();
   const changed = trimmed.length > 0 && trimmed !== initialName.trim();
 
-  const run = async (action: () => Promise<string | null>) => {
+  const run = async (action: () => Promise<void>) => {
     setBusy(true);
-    setError(null);
     try {
-      const err = await action();
-      if (err) setError(err);
-    } catch {
-      setError("Não foi possível concluir a operação. Tente novamente.");
+      await action();
     } finally {
       setBusy(false);
       setConfirming(false);
@@ -58,9 +53,7 @@ export function FeaturePanel({
       title={label}
       minimized={minimized}
       onToggleMinimized={onToggleMinimized}
-      summary={
-        error ? <span className={styles.error}>{error}</span> : initialName
-      }
+      summary={initialName}
       headerActions={
         <button
           type="button"
@@ -87,8 +80,6 @@ export function FeaturePanel({
         }
         className={styles.input}
       />
-
-      {error && <p className={styles.error}>{error}</p>}
 
       <button
         type="button"

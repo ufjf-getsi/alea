@@ -9,7 +9,7 @@ import {
   customType,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { PolygonGeometry } from "@/lib/maps/types";
+import type { PointGeometry, PolygonGeometry } from "@/lib/maps/types";
 import { Geometry } from "wkx";
 
 //auth models
@@ -93,8 +93,6 @@ export const verification = pgTable(
 );
 
 //map models
-export type PointGeometry = { type: "Point"; coordinates: [number, number] }; // [lng, lat]
-
 const geometryColumn = <T>(kind: "Point" | "Polygon") =>
   customType<{ data: T; driverData: string }>({
     dataType: () => `geometry(${kind}, 4326)`,

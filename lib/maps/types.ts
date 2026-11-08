@@ -1,7 +1,7 @@
 export type MapMode = "view" | "marker" | "region";
 export type FeatureType = "marker" | "region";
 
-// Leaflet uses [lat, lng]
+// app uses Leaflet's coordinate format: [lat, lng]
 export type LatLng = [number, number];
 
 export type BBox = {
@@ -12,13 +12,14 @@ export type BBox = {
 };
 
 // GeoJSON uses [lng, lat]
+export type PointGeometry = { type: "Point"; coordinates: [number, number] };
 export type PolygonGeometry = {
   type: "Polygon";
   coordinates: [number, number][][];
 };
 
-export type MapMarker = { id: string; name: string; lat: number; lng: number };
-export type MapRegion = { id: string; name: string; geometry: PolygonGeometry };
+export type MapMarker = { id: string; name: string; position: LatLng };
+export type MapRegion = { id: string; name: string; positions: LatLng[][] };
 export type MapData = {
   markers: MapMarker[];
   regions: MapRegion[];

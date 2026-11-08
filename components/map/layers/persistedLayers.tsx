@@ -1,9 +1,7 @@
 "use client";
 
-import { memo } from "react";
 import { Marker, Polygon } from "react-leaflet";
-import type { FeatureType } from "@/lib/maps/types";
-import type { ViewMarker, ViewRegion } from "@/lib/maps/viewModel";
+import type { FeatureType, MapMarker, MapRegion } from "@/lib/maps/types";
 
 const REGION_STYLE = { color: "#2563eb", weight: 2, fillOpacity: 0.2 };
 const SELECTED_STYLE = { color: "#f59e0b", weight: 3, fillOpacity: 0.3 };
@@ -16,13 +14,13 @@ const DIMMED_STYLE = {
 
 type OnSelect = (type: FeatureType, id: string) => void;
 
-const RegionLayer = memo(function RegionLayer({
+function RegionLayer({
   region,
   selected,
   dimmed,
   onSelect,
 }: {
-  region: ViewRegion;
+  region: MapRegion;
   selected: boolean;
   dimmed: boolean;
   onSelect: OnSelect;
@@ -36,14 +34,14 @@ const RegionLayer = memo(function RegionLayer({
       eventHandlers={{ click: () => onSelect("region", region.id) }}
     />
   );
-});
+}
 
-const MarkerLayer = memo(function MarkerLayer({
+function MarkerLayer({
   marker,
   dimmed,
   onSelect,
 }: {
-  marker: ViewMarker;
+  marker: MapMarker;
   dimmed: boolean;
   onSelect: OnSelect;
 }) {
@@ -54,18 +52,18 @@ const MarkerLayer = memo(function MarkerLayer({
       eventHandlers={{ click: () => onSelect("marker", marker.id) }}
     />
   );
-});
+}
 
 type PersistedLayersProps = {
-  markers: ViewMarker[];
-  regions: ViewRegion[];
+  markers: MapMarker[];
+  regions: MapRegion[];
   selectedId: string | null;
   hiddenId: string | null;
   dimmed: boolean;
   onSelect: OnSelect;
 };
 
-export const PersistedLayers = memo(function PersistedLayers({
+export function PersistedLayers({
   markers,
   regions,
   selectedId,
@@ -98,4 +96,4 @@ export const PersistedLayers = memo(function PersistedLayers({
         ))}
     </>
   );
-});
+}

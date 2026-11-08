@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import L from "leaflet";
+import { LuX } from "react-icons/lu";
 import { MapContainer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import icon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -9,9 +10,13 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import shadow from "leaflet/dist/images/marker-shadow.png";
 
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/maps/mapConfig";
-import type { FeatureType, MapMode } from "@/lib/maps/types";
-import { MIN_REGION_VERTICES } from "@/lib/maps/drawState";
-import { initialUiState, uiReducer } from "@/lib/maps/uiState";
+import type { FeatureType, LatLng, MapMode } from "@/lib/maps/types";
+import {
+  canRemoveVertex,
+  draftContext,
+  initialMapState,
+  mapReducer,
+} from "@/lib/maps/mapState";
 import { BaseLayers } from "@/components/map/layers/baseLayers";
 import { DrawPanel } from "@/components/map/panels/drawPanel";
 import { FeaturePanel } from "@/components/map/panels/featurePanel";
@@ -23,7 +28,6 @@ import {
 import { MapToolbar } from "@/components/map/mapToolbar";
 import { DraftLayer } from "@/components/map/layers/draftLayer";
 import { PersistedLayers } from "@/components/map/layers/persistedLayers";
-import { useDrawing } from "@/components/map/hooks/useDrawing";
 import { useDrawShortcuts } from "@/components/map/hooks/useDrawShortcuts";
 import { useMapFeatures } from "@/components/map/hooks/useMapFeatures";
 import {
@@ -41,22 +45,24 @@ L.Icon.Default.mergeOptions({
   shadowUrl: shadow.src,
 });
 
+const NOTICE_MS = 5000;
+
 export default function MapView({ canEdit }: { canEdit: boolean }) {
-  const [ui, dispatchUi] = useReducer(uiReducer, initialUiState);
-  const { selected, minimized, error } = ui;
+  const [state, dispatch] = useReducer(mapReducer, initialMapState);
+  const [minimized, setMinimized] = useState(false);
 
-  const [locateError, setLocateError] = useState<string | null>(null);
-
+  const [notice, setNotice] = useState<string | null>(null);
   useEffect(() => {
-    if (!locateError) return;
-    const t = setTimeout(() => setLocateError(null), 4000);
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), NOTICE_MS);
     return () => clearTimeout(t);
-  }, [locateError]);
+  }, [notice]);
 
-  const { state: drawState, actions: draw, canUndo, canRedo } = useDrawing();
-  const { mode, present: draft, editingId, selectedVertex } = drawState;
-  const drawing = mode !== "view";
-  const editing = editingId !== null;
+  const ctx = draftContext(state);
+  const mode: MapMode = ctx?.kind ?? "view";
+  const drawing = ctx !== null;
+  const editing = ctx?.editingId != null;
+  const canRemove = canRemoveVertex(ctx);
 
   const { features, onBoundsChange, zoomedOut } = useMapFeatures();
   const {
@@ -74,55 +80,50 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
     moveMarker.isPending ||
     updateRegionGeometry.isPending;
 
-  const setError = (message: string | null) =>
-    dispatchUi({ type: "setError", error: message });
-
   const changeMode = (next: MapMode) => {
-    draw.setMode(next);
-    dispatchUi({ type: "modeChanged" });
+    dispatch({ type: "setMode", mode: next });
+    setNotice(null);
   };
 
-  const finishDrawing = () => {
-    draw.setMode("view");
-    setError(null);
+  const finish = () => {
+    dispatch({ type: "finish" });
+    setNotice(null);
   };
 
   const handleMapClick = (latlng: L.LatLng) =>
-    draw.addPoint([latlng.lat, latlng.lng]);
+    dispatch({ type: "addPoint", point: [latlng.lat, latlng.lng] });
+
+  const select = (type: FeatureType, id: string) =>
+    dispatch({ type: "select", selection: { type, id } });
 
   const handleSave = async (name: string) => {
-    if (draft.length === 0) return;
-    setError(null);
+    if (state.status !== "drawing" && state.status !== "editing") return;
+    const { points } = state.draft;
+    if (points.length === 0) return;
+
+    setNotice(null);
     try {
-      if (editingId) {
-        if (mode === "marker") {
-          const [lat, lng] = draft[0];
-          await moveMarker.mutateAsync({ id: editingId, lat, lng });
+      if (state.status === "editing") {
+        const { type, id } = state.selection;
+        if (type === "marker") {
+          const [lat, lng] = points[0];
+          await moveMarker.mutateAsync({ id, lat, lng });
         } else {
-          await updateRegionGeometry.mutateAsync({
-            id: editingId,
-            points: draft,
-          });
+          await updateRegionGeometry.mutateAsync({ id, points });
         }
-      } else if (mode === "marker") {
-        const [lat, lng] = draft[0];
+      } else if (state.mode === "marker") {
+        const [lat, lng] = points[0];
         await createMarker.mutateAsync({ name, lat, lng });
-      } else if (mode === "region") {
-        await createRegion.mutateAsync({ name, points: draft });
+      } else {
+        await createRegion.mutateAsync({ name, points });
       }
-      finishDrawing();
+      dispatch({ type: "finish" });
     } catch (err) {
-      setError(errorMessage(err, "Não foi possível salvar. Tente novamente."));
+      setNotice(errorMessage(err, "Não foi possível salvar. Tente novamente."));
     }
   };
 
-  const select = useCallback(
-    (type: FeatureType, id: string) => {
-      if (!drawing) dispatchUi({ type: "select", selection: { type, id } });
-    },
-    [drawing],
-  );
-
+  const selected = state.status === "selected" ? state.selection : null;
   const selectedMarker =
     selected?.type === "marker"
       ? features.markers.find((m) => m.id === selected.id)
@@ -134,82 +135,73 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
   const selectedName = (selectedMarker ?? selectedRegion)?.name;
 
   const handleRename = async (name: string) => {
-    if (!selected) return "Nada selecionado.";
+    if (!selected) return;
     try {
       await renameFeature.mutateAsync({ ...selected, name });
-      return null;
     } catch (err) {
-      return errorMessage(err);
+      setNotice(errorMessage(err));
     }
   };
 
   const handleDelete = async () => {
-    if (!selected) return "Nada selecionado.";
+    if (!selected) return;
     try {
       await deleteFeature.mutateAsync(selected);
-      dispatchUi({ type: "deselect" });
-      return null;
+      dispatch({ type: "deselect" });
     } catch (err) {
-      return errorMessage(err);
+      setNotice(errorMessage(err));
     }
   };
 
   const handleEditGeometry = async () => {
-    if (selectedMarker) {
-      draw.startEditing(selectedMarker.id, "marker", [selectedMarker.position]);
-      setError(null);
-      return null;
-    }
-    if (!selectedRegion) return "Nada selecionado.";
+    if (!selected) return;
     try {
-      const { points } = await loadRegionPoints.mutateAsync(selectedRegion.id);
-      draw.startEditing(selectedRegion.id, "region", points);
-      setError(null);
-      return null;
+      const points: LatLng[] = selectedMarker
+        ? [selectedMarker.position]
+        : (await loadRegionPoints.mutateAsync({ id: selected.id })).points;
+      dispatch({ type: "startEditing", selection: selected, points });
+      setNotice(null);
     } catch (err) {
-      return errorMessage(err);
+      setNotice(errorMessage(err));
     }
-  };
-
-  const canRemoveVertex =
-    mode === "region" &&
-    selectedVertex !== null &&
-    (!editing || draft.length > MIN_REGION_VERTICES);
-
-  const removeSelectedVertex = () => {
-    if (canRemoveVertex && selectedVertex !== null)
-      draw.removeVertex(selectedVertex);
   };
 
   useDrawShortcuts(canEdit && drawing, {
-    onUndo: draw.undo,
-    onRedo: draw.redo,
-    onRemoveVertex: removeSelectedVertex,
-    onEscape: finishDrawing,
+    onUndo: () => dispatch({ type: "undo" }),
+    onRedo: () => dispatch({ type: "redo" }),
+    onRemoveVertex: () => dispatch({ type: "removeSelectedVertex" }),
+    onEscape: finish,
   });
 
-  const toggleMinimized = () => dispatchUi({ type: "toggleMinimized" });
+  const hint = drawing
+    ? null
+    : zoomedOut
+      ? "Aproxime o zoom para buscar mais regiões e marcadores."
+      : features.truncated
+        ? "Há itens demais nesta área e alguns não estão sendo exibidos. Aproxime o zoom para ver todos."
+        : null;
+  const message = notice ?? hint;
+
+  const toggleMinimized = () => setMinimized((m) => !m);
 
   return (
     <div className={styles.wrapper}>
       {canEdit && <MapToolbar mode={mode} onChange={changeMode} />}
 
-      {!drawing && zoomedOut && (
-        <div className={styles.notice} role="status">
-          Aproxime o zoom para buscar mais regiões e marcadores.
-        </div>
-      )}
-
-      {!drawing && !zoomedOut && features.truncated && (
-        <div className={styles.notice} role="status">
-          Há itens demais nesta área e alguns não estão sendo exibidos. Aproxime
-          o zoom para ver todos.
-        </div>
-      )}
-
-      {locateError && (
-        <div className={styles.notice} role="status">
-          {locateError}
+      {message && (
+        <div className={styles.notice} role={notice ? "alert" : "status"}>
+          <span>{message}</span>
+          {notice && (
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              aria-label="Fechar aviso"
+              title="Fechar aviso"
+              className={styles.noticeClose}
+            >
+              <LuX size={14} aria-hidden="true" />
+            </button>
+          )}
         </div>
       )}
 
@@ -219,62 +211,68 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
         className={styles.map}
       >
         <BaseLayers />
-        <LocateControl onError={setLocateError} />
+        <LocateControl onError={setNotice} />
         <ViewportWatcher onChange={onBoundsChange} />
-        <ClickHandler enabled={drawing && !editing} onClick={handleMapClick} />
+        <ClickHandler
+          enabled={state.status === "drawing"}
+          onClick={handleMapClick}
+        />
 
         <PersistedLayers
           markers={features.markers}
           regions={features.regions}
           selectedId={selected?.id ?? null}
-          hiddenId={editingId}
+          hiddenId={ctx?.editingId ?? null}
           dimmed={drawing}
           onSelect={select}
         />
 
-        {mode !== "view" && (
+        {ctx && (
           <DraftLayer
-            mode={mode}
-            points={draft}
+            mode={ctx.kind}
+            points={ctx.draft.points}
             editing={editing}
-            selectedVertex={selectedVertex}
-            onMove={draw.moveVertex}
-            onInsert={draw.insertVertex}
-            onSelect={draw.selectVertex}
+            selectedVertex={ctx.draft.selectedVertex}
+            onMove={(index, point) =>
+              dispatch({ type: "moveVertex", index, point })
+            }
+            onInsert={(index, point) =>
+              dispatch({ type: "insertVertex", index, point })
+            }
+            onSelect={(index) => dispatch({ type: "selectVertex", index })}
           />
         )}
       </MapContainer>
 
-      {canEdit && mode !== "view" && (
+      {canEdit && ctx && (
         <DrawPanel
-          key={`${mode}-${editingId ?? "new"}`}
-          mode={mode}
+          key={`${ctx.kind}-${ctx.editingId ?? "new"}`}
+          mode={ctx.kind}
           editing={editing}
-          pointCount={draft.length}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          canRemoveVertex={canRemoveVertex}
+          pointCount={ctx.draft.points.length}
+          canUndo={ctx.draft.past.length > 0}
+          canRedo={ctx.draft.future.length > 0}
+          canRemoveVertex={canRemove}
           saving={saving}
-          error={error}
           minimized={minimized}
           onToggleMinimized={toggleMinimized}
-          onUndo={draw.undo}
-          onRedo={draw.redo}
-          onRemoveVertex={removeSelectedVertex}
-          onCancel={finishDrawing}
+          onUndo={() => dispatch({ type: "undo" })}
+          onRedo={() => dispatch({ type: "redo" })}
+          onRemoveVertex={() => dispatch({ type: "removeSelectedVertex" })}
+          onCancel={finish}
           onSave={handleSave}
         />
       )}
 
-      {!drawing && selected && selectedName !== undefined && (
+      {state.status === "selected" && selectedName !== undefined && (
         <FeaturePanel
-          key={selected.id}
-          type={selected.type}
+          key={state.selection.id}
+          type={state.selection.type}
           initialName={selectedName}
           canEdit={canEdit}
           minimized={minimized}
           onToggleMinimized={toggleMinimized}
-          onClose={() => dispatchUi({ type: "deselect" })}
+          onClose={() => dispatch({ type: "deselect" })}
           onRename={handleRename}
           onEditGeometry={handleEditGeometry}
           onDelete={handleDelete}

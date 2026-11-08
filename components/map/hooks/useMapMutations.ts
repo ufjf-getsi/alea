@@ -10,17 +10,9 @@ import {
   renameFeature as renameFeatureAction,
   updateRegionGeometry as updateRegionGeometryAction,
 } from "@/actions/maps/mapActions";
-import type {
-  CreateMarkerInput,
-  CreateRegionInput,
-  DeleteFeatureInput,
-  MoveMarkerInput,
-  RenameFeatureInput,
-  UpdateRegionGeometryInput,
-} from "@/lib/validations/maps";
-import type { ActionResult, LatLng } from "@/lib/maps/types";
+import type { RegionIdInput } from "@/lib/validations/maps";
+import type { ActionResult } from "@/lib/maps/types";
 import { mapKeys } from "@/lib/maps/queryKeys";
-import type { ViewData } from "@/lib/maps/viewModel";
 
 class ActionError extends Error {}
 
@@ -35,88 +27,27 @@ async function unwrap<T>(promise: Promise<ActionResult<T>>) {
   return res.data;
 }
 
-export function useMapMutations() {
+function useFeatureMutation<I, O>(
+  action: (input: I) => Promise<ActionResult<O>>,
+) {
   const qc = useQueryClient();
-
-  const patch = (fn: (d: ViewData) => ViewData) =>
-    qc.setQueriesData<ViewData>({ queryKey: mapKeys.tiles }, (d) => d && fn(d));
-
-  const invalidate = () => qc.invalidateQueries({ queryKey: mapKeys.tiles });
-
-  const createMarker = useMutation({
-    mutationFn: (input: CreateMarkerInput) => unwrap(createMarkerAction(input)),
-    onSuccess: invalidate,
+  return useMutation({
+    mutationFn: (input: I) => unwrap(action(input)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: mapKeys.features }),
   });
+}
 
-  const createRegion = useMutation({
-    mutationFn: (input: CreateRegionInput) => unwrap(createRegionAction(input)),
-    onSuccess: invalidate,
-  });
-
-  const renameFeature = useMutation({
-    mutationFn: (input: RenameFeatureInput) =>
-      unwrap(renameFeatureAction(input)),
-    onSuccess: (_data, { id, name }) => {
-      patch((d) => ({
-        ...d,
-        markers: d.markers.map((m) => (m.id === id ? { ...m, name } : m)),
-        regions: d.regions.map((r) => (r.id === id ? { ...r, name } : r)),
-      }));
-      void invalidate();
-    },
-  });
-
-  const deleteFeature = useMutation({
-    mutationFn: (input: DeleteFeatureInput) =>
-      unwrap(deleteFeatureAction(input)),
-    onSuccess: (_data, { id }) => {
-      patch((d) => ({
-        ...d,
-        markers: d.markers.filter((m) => m.id !== id),
-        regions: d.regions.filter((r) => r.id !== id),
-      }));
-      void invalidate();
-    },
-  });
-
-  const moveMarker = useMutation({
-    mutationFn: (input: MoveMarkerInput) => unwrap(moveMarkerAction(input)),
-    onSuccess: (_data, { id, lat, lng }) => {
-      patch((d) => ({
-        ...d,
-        markers: d.markers.map((m) =>
-          m.id === id ? { ...m, position: [lat, lng] as LatLng } : m,
-        ),
-      }));
-      void invalidate();
-    },
-  });
-
-  const updateRegionGeometry = useMutation({
-    mutationFn: (input: UpdateRegionGeometryInput) =>
-      unwrap(updateRegionGeometryAction(input)),
-    onSuccess: (_data, { id, points }) => {
-      patch((d) => ({
-        ...d,
-        regions: d.regions.map((r) =>
-          r.id === id ? { ...r, positions: [points] } : r,
-        ),
-      }));
-      void invalidate();
-    },
-  });
-
-  const loadRegionPoints = useMutation({
-    mutationFn: (id: string) => unwrap(getRegionPointsAction({ id })),
-  });
-
+export function useMapMutations() {
   return {
-    createMarker,
-    createRegion,
-    moveMarker,
-    updateRegionGeometry,
-    loadRegionPoints,
-    renameFeature,
-    deleteFeature,
+    createMarker: useFeatureMutation(createMarkerAction),
+    createRegion: useFeatureMutation(createRegionAction),
+    renameFeature: useFeatureMutation(renameFeatureAction),
+    deleteFeature: useFeatureMutation(deleteFeatureAction),
+    moveMarker: useFeatureMutation(moveMarkerAction),
+    updateRegionGeometry: useFeatureMutation(updateRegionGeometryAction),
+    loadRegionPoints: useMutation({
+      mutationFn: (input: RegionIdInput) =>
+        unwrap(getRegionPointsAction(input)),
+    }),
   };
 }

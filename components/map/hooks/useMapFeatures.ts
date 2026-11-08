@@ -1,129 +1,75 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type L from "leaflet";
-import { useQueries, type UseQueryResult } from "@tanstack/react-query";
-import type { MapData } from "@/lib/maps/types";
-import { tileId, tilesForBounds, type Tile } from "@/lib/maps/tiles";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { BBox, MapData } from "@/lib/maps/types";
 import { mapKeys } from "@/lib/maps/queryKeys";
-import {
-  EMPTY_VIEW_DATA,
-  toViewData,
-  type ViewData,
-  type ViewMarker,
-  type ViewRegion,
-} from "@/lib/maps/viewModel";
-import { MIN_FETCH_ZOOM, tileZoomFor } from "@/lib/maps/mapConfig";
+import { MIN_FETCH_ZOOM } from "@/lib/maps/mapConfig";
 
-const DEBOUNCE_MS = 300;
-const STALE_MS = 30_000;
-const REFRESH_MS = 60_000;
-const GC_MS = 5 * 60_000;
+const EMPTY: MapData = { markers: [], regions: [], truncated: false };
 
-async function fetchTile(tile: Tile, signal: AbortSignal): Promise<ViewData> {
-  const { z, x, y } = tile;
-  const res = await fetch(`/api/maps/features?z=${z}&x=${x}&y=${y}`, {
-    signal,
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return toViewData((await res.json()) as MapData);
-}
+const clamp = (v: number, limit: number) =>
+  Math.min(limit, Math.max(-limit, v));
 
-type Merged = ViewData & { pending: boolean };
-
-function mergeTiles(results: UseQueryResult<ViewData, Error>[]): Merged {
-  const markers = new Map<string, ViewMarker>();
-  const regions = new Map<string, ViewRegion>();
-  let pending = false;
-  let truncated = false;
-
-  for (const r of results) {
-    if (r.isPending) {
-      pending = true;
-      continue;
-    }
-    if (!r.data) continue;
-    truncated ||= r.data.truncated;
-    r.data.markers.forEach((m) => markers.set(m.id, m));
-    r.data.regions.forEach((x) => regions.set(x.id, x));
-  }
+function snapBounds(bounds: L.LatLngBounds, zoom: number): BBox {
+  const step = 360 / 2 ** zoom;
+  const snap = (v: number, round: (n: number) => number, limit: number) =>
+    Number(clamp(round(v / step) * step, limit).toFixed(6));
 
   return {
-    markers: [...markers.values()],
-    regions: [...regions.values()],
-    truncated,
-    pending,
+    minLat: snap(bounds.getSouth(), Math.floor, 90),
+    minLng: snap(bounds.getWest(), Math.floor, 180),
+    maxLat: snap(bounds.getNorth(), Math.ceil, 90),
+    maxLng: snap(bounds.getEast(), Math.ceil, 180),
   };
 }
 
-const sameItems = <T>(a: T[], b: T[]) =>
-  a.length === b.length && a.every((item, i) => item === b[i]);
+const sameBBox = (a: BBox, b: BBox) =>
+  a.minLat === b.minLat &&
+  a.minLng === b.minLng &&
+  a.maxLat === b.maxLat &&
+  a.maxLng === b.maxLng;
 
-const sameView = (a: ViewData, b: ViewData) =>
-  a.truncated === b.truncated &&
-  sameItems(a.markers, b.markers) &&
-  sameItems(a.regions, b.regions);
-
-const sameTiles = (a: Tile[], b: Tile[]) =>
-  a.length === b.length && a.every((t, i) => tileId(t) === tileId(b[i]));
+async function fetchFeatures(
+  bbox: BBox,
+  signal: AbortSignal,
+): Promise<MapData> {
+  const params = new URLSearchParams({
+    minLat: String(bbox.minLat),
+    minLng: String(bbox.minLng),
+    maxLat: String(bbox.maxLat),
+    maxLng: String(bbox.maxLng),
+  });
+  const res = await fetch(`/api/maps/features?${params}`, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as MapData;
+}
 
 export function useMapFeatures() {
-  const [tiles, setTiles] = useState<Tile[]>([]);
+  const [bbox, setBbox] = useState<BBox | null>(null);
   const [zoomedOut, setZoomedOut] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const merged = useQueries({
-    queries: tiles.map((tile) => ({
-      queryKey: mapKeys.tile(tile),
-      queryFn: ({ signal }: { signal: AbortSignal }) => fetchTile(tile, signal),
-      staleTime: STALE_MS,
-      gcTime: GC_MS,
-      refetchInterval: REFRESH_MS,
-      enabled: !zoomedOut,
-    })),
-    combine: mergeTiles,
+  const onBoundsChange = (bounds: L.LatLngBounds, zoom: number) => {
+    const z = Math.floor(zoom);
+
+    if (z < MIN_FETCH_ZOOM) {
+      setZoomedOut(true);
+      return;
+    }
+
+    setZoomedOut(false);
+    const next = snapBounds(bounds, z);
+    setBbox((prev) => (prev && sameBBox(prev, next) ? prev : next));
+  };
+
+  const { data = EMPTY } = useQuery({
+    queryKey: mapKeys.bbox(bbox),
+    queryFn: ({ signal }) => fetchFeatures(bbox!, signal),
+    enabled: bbox !== null && !zoomedOut,
+    placeholderData: keepPreviousData,
+    refetchInterval: 30_000,
   });
 
-  const [features, setFeatures] = useState<ViewData>(EMPTY_VIEW_DATA);
-  if (!merged.pending && !sameView(features, merged)) {
-    setFeatures({
-      markers: merged.markers,
-      regions: merged.regions,
-      truncated: merged.truncated,
-    });
-  }
-
-  const onBoundsChange = useCallback((bounds: L.LatLngBounds, zoom: number) => {
-    if (timer.current) clearTimeout(timer.current);
-
-    timer.current = setTimeout(() => {
-      const z = Math.floor(zoom);
-
-      if (z < MIN_FETCH_ZOOM) {
-        setZoomedOut(true);
-        return;
-      }
-
-      setZoomedOut(false);
-      const next = tilesForBounds(
-        {
-          minLat: bounds.getSouth(),
-          minLng: bounds.getWest(),
-          maxLat: bounds.getNorth(),
-          maxLng: bounds.getEast(),
-        },
-        tileZoomFor(z),
-      );
-      setTiles((prev) => (sameTiles(prev, next) ? prev : next));
-    }, DEBOUNCE_MS);
-  }, []);
-
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  return { features, onBoundsChange, zoomedOut };
+  return { features: data, onBoundsChange, zoomedOut };
 }

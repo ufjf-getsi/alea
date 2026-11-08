@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MIN_TILE_ZOOM, MAX_TILE_ZOOM } from "@/lib/maps/mapConfig";
+import { MAX_BBOX_SPAN } from "@/lib/maps/mapConfig";
 
 const name = z
   .string()
@@ -38,22 +38,26 @@ const points = z
     "O polígono é degenerado: os pontos estão repetidos ou alinhados.",
   );
 
-const MAX_SERVED_ZOOM = Math.min(MAX_TILE_ZOOM, 18);
-
-const int = z
+const coordParam = z
   .string()
-  .regex(/^\d{1,8}$/)
+  .regex(/^-?\d{1,3}(\.\d{1,6})?$/)
   .transform(Number);
 
-export const tileSchema = z
+export const bboxSchema = z
   .object({
-    z: int.pipe(z.number().min(MIN_TILE_ZOOM).max(MAX_SERVED_ZOOM)),
-    x: int,
-    y: int,
+    minLat: coordParam.pipe(lat),
+    minLng: coordParam.pipe(lng),
+    maxLat: coordParam.pipe(lat),
+    maxLng: coordParam.pipe(lng),
   })
-  .refine(({ z: zoom, x, y }) => x < 2 ** zoom && y < 2 ** zoom);
+  .refine((b) => b.minLat < b.maxLat && b.minLng < b.maxLng)
+  .refine(
+    (b) =>
+      b.maxLat - b.minLat <= MAX_BBOX_SPAN &&
+      b.maxLng - b.minLng <= MAX_BBOX_SPAN,
+  );
 
-export type TileInput = z.infer<typeof tileSchema>;
+export type BBoxInput = z.infer<typeof bboxSchema>;
 
 export const createMarkerSchema = z.object({ name, lat, lng });
 export type CreateMarkerInput = z.infer<typeof createMarkerSchema>;
