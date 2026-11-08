@@ -57,7 +57,7 @@ export const bboxSchema = z
       b.maxLng - b.minLng <= MAX_BBOX_SPAN,
   );
 
-export type BBoxInput = z.infer<typeof bboxSchema>;
+// export type BBoxInput = z.infer<typeof bboxSchema>;
 
 export const createMarkerSchema = z.object({ name, lat, lng });
 export type CreateMarkerInput = z.infer<typeof createMarkerSchema>;

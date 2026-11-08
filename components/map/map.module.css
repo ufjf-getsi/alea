@@ -90,12 +90,6 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-.panelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .panelTitle {
   margin: 0;
   font-size: 16px;
