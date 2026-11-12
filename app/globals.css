@@ -4,6 +4,26 @@
   --header-height: 3.5rem;
   --max-layout: 1520px;
 
+  --surface: #ffffff;
+  --field-bg: #ffffff;
+  --muted: color-mix(in srgb, var(--foreground) 65%, transparent);
+  --border: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --border-strong: color-mix(in srgb, var(--foreground) 50%, transparent);
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-contrast: #ffffff;
+  --link: #1d4ed8;
+  --focus: #2563eb;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-text: #b91c1c;
+  --success-text: #15803d;
+
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
   --gradient-glow-inner: rgba(59, 130, 246, 0.12);
   --gradient-glow-mid: rgba(59, 130, 246, 0.2);
   --gradient-grid-line: rgba(59, 130, 246, 0.15);
@@ -13,6 +33,13 @@
   :root {
     --background: #0a1628;
     --foreground: #ededed;
+
+    --surface: #10203a;
+    --field-bg: #0b1730;
+    --link: #60a5fa;
+    --focus: #60a5fa;
+    --danger-text: #f87171;
+    --success-text: #4ade80;
 
     --gradient-glow-inner: rgba(15, 40, 84, 0.4);
     --gradient-glow-mid: rgba(15, 40, 84, 0.8);
