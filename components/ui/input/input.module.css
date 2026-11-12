@@ -1,0 +1,95 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+
+  min-height: 2.75rem;
+
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+
+  background: var(--field-bg);
+
+  transition: border-color 150ms ease;
+}
+
+.control:hover {
+  border-color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
+.control:focus-within {
+  border-color: var(--focus);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.invalid,
+.invalid:hover {
+  border-color: var(--danger);
+}
+
+.invalid:focus-within {
+  border-color: var(--danger);
+  outline-color: var(--danger);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.625rem;
+  padding-inline: 0.875rem;
+
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  font: inherit;
+  font-size: 1rem;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.input::placeholder {
+  color: color-mix(in srgb, var(--foreground) 45%, transparent);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input::-ms-reveal {
+  display: none;
+}
+
+.adornment {
+  display: flex;
+  align-items: center;
+  padding-right: 0.25rem;
+}
+
+.hint,
+.error {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--danger-text);
+}
