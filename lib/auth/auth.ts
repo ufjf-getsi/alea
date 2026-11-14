@@ -8,6 +8,10 @@ import { ROLE_LEVELS } from "@/lib/auth/roles";
 import { waitUntil } from "@vercel/functions";
 import { db } from "@/db/db";
 import { consumeAuthRateLimit } from "@/lib/rateLimit";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "@/lib/validations/auth";
 import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
@@ -49,6 +53,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
     requireEmailVerification: true,
     revokeSessionsOnPasswordReset: true,
     resetPasswordTokenExpiresIn: 60 * 60,

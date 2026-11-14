@@ -17,6 +17,10 @@ export async function signUpAction(
 ): Promise<AuthState> {
   const data = Object.fromEntries(formData);
 
+  if (data.password !== data.confirmPassword) {
+    return { error: "As senhas não coincidem." };
+  }
+
   const result = signUpSchema.safeParse(data);
 
   if (!result.success) {
@@ -50,15 +54,8 @@ export async function signUpAction(
       },
     });
 
-    return {
-      success: true,
-    };
-  } catch (error) {
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Não foi possível criar a conta.",
-    };
+    return { success: true };
+  } catch {
+    return { error: "Não foi possível criar a conta." };
   }
 }
