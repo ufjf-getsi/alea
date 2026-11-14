@@ -1,0 +1,26 @@
+.divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.withLabel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  height: auto;
+  background: none;
+}
+
+.withLabel::before,
+.withLabel::after {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  content: "";
+}
+
+.label {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
