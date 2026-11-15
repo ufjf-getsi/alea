@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import Card from "@/components/ui/card/card";
+import AuthLogo from "@/components/auth/authLogo/authLogo";
 
 import styles from "./authCard.module.css";
 
@@ -21,6 +22,7 @@ export default function AuthCard({
     <div className={styles.page}>
       <div className={styles.container}>
         <Card
+          media={<AuthLogo />}
           title={title}
           description={description}
           headingAs="h1"

@@ -4,12 +4,12 @@ import clsx from "clsx";
 import Header, { type HeadingLevel } from "@/components/ui/header/header";
 
 import styles from "./card.module.css";
-import AuthLogo from "@/components/auth/authLogo/authLogo";
 
 interface CardProps {
   title?: string;
   description?: ReactNode;
   headingAs?: HeadingLevel;
+  media?: ReactNode;
   footer?: ReactNode;
   className?: string;
   children?: ReactNode;
@@ -19,6 +19,7 @@ export default function Card({
   title,
   description,
   headingAs = "h2",
+  media,
   footer,
   className,
   children,
@@ -30,7 +31,8 @@ export default function Card({
       className={clsx(styles.card, className)}
       aria-labelledby={title ? titleId : undefined}
     >
-      <AuthLogo />
+      {media}
+
       {title && (
         <div className={styles.header}>
           <Header as={headingAs} variant="card" id={titleId}>
