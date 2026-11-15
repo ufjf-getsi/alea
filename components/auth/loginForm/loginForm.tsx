@@ -4,49 +4,45 @@ import { useActionState } from "react";
 
 import { loginAction } from "@/actions/auth/loginAction";
 import { initialAuthState } from "@/actions/auth/authState";
-import GoogleLoginButton from "@/components/auth/googleSignUpButton";
+import GoogleAuthButton from "@/components/auth/googleSignUpButton";
+import Alert from "@/components/ui/alert/alert";
+import Divider from "@/components/ui/divider/divider";
+import Form from "@/components/ui/form/form";
+import Input from "@/components/ui/input/input";
+import PasswordInput from "@/components/ui/passwordInput/passwordInput";
+import SubmitButton from "@/components/ui/submitButton/submitButton";
 
 export default function LoginForm() {
-  const [state, formAction, isPending] = useActionState(
-    loginAction,
-    initialAuthState,
-  );
+  const [state, formAction] = useActionState(loginAction, initialAuthState);
 
   return (
     <>
-      <form action={formAction}>
-        <div>
-          <label htmlFor="email">Email</label>
+      <Form action={formAction}>
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+        />
 
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-          />
-        </div>
+        <PasswordInput
+          label="Senha"
+          name="password"
+          autoComplete="current-password"
+          required
+        />
 
-        <div>
-          <label htmlFor="password">Senha</label>
+        {state.error && <Alert variant="error">{state.error}</Alert>}
 
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
-        </div>
+        <SubmitButton fullWidth pendingLabel="Entrando...">
+          Entrar
+        </SubmitButton>
+      </Form>
 
-        {state.error && <p role="alert">{state.error}</p>}
+      <Divider>ou</Divider>
 
-        <button type="submit" disabled={isPending}>
-          {isPending ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
-
-      <GoogleLoginButton />
+      <GoogleAuthButton />
     </>
   );
 }
