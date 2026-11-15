@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Header, { type HeadingLevel } from "@/components/ui/header/header";
 
 import styles from "./card.module.css";
+import AuthLogo from "@/components/auth/authLogo/authLogo";
 
 interface CardProps {
   title?: string;
@@ -29,6 +30,7 @@ export default function Card({
       className={clsx(styles.card, className)}
       aria-labelledby={title ? titleId : undefined}
     >
+      <AuthLogo />
       {title && (
         <div className={styles.header}>
           <Header as={headingAs} variant="card" id={titleId}>
