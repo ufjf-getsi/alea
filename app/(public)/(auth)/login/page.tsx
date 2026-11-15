@@ -1,11 +1,24 @@
 import LoginForm from "@/components/auth/loginForm/loginForm";
+import AuthCard from "@/components/auth/authCard/authCard";
+import TextLink from "@/components/ui/textLink/textLink";
 
 export default function LoginPage() {
   return (
-    <div>
-      <h1>Entrar</h1>
-
+    <AuthCard
+      title="Entrar"
+      description="Acesse sua conta para continuar."
+      footer={
+        <>
+          <p>
+            Não tem conta? <TextLink href="/signUp">Criar conta</TextLink>
+          </p>
+          <p>
+            <TextLink href="/forgotPassword">Esqueci minha senha</TextLink>
+          </p>
+        </>
+      }
+    >
       <LoginForm />
-    </div>
+    </AuthCard>
   );
 }
