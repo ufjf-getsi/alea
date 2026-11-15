@@ -1,0 +1,12 @@
+.page {
+  display: grid;
+  place-items: center;
+
+  min-height: calc(100dvh - var(--header-height));
+  padding: 2rem 1rem 4rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 26rem;
+}
