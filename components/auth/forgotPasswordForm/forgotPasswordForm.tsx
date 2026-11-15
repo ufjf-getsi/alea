@@ -4,40 +4,41 @@ import { useActionState } from "react";
 
 import { forgotPasswordAction } from "@/actions/auth/forgotPasswordAction";
 import { initialAuthState } from "@/actions/auth/authState";
+import Alert from "@/components/ui/alert/alert";
+import Form from "@/components/ui/form/form";
+import Input from "@/components/ui/input/input";
+import SubmitButton from "@/components/ui/submitButton/submitButton";
 
 export default function ForgotPasswordForm() {
-  const [state, formAction, isPending] = useActionState(
+  const [state, formAction] = useActionState(
     forgotPasswordAction,
     initialAuthState,
   );
 
   if (state.success) {
     return (
-      <div>
-        <p role="status">
-          Se existir uma conta com esse e-mail, enviamos um link de redefinição.
-          Confira também a caixa de spam.
-        </p>
-      </div>
+      <Alert variant="success">
+        Se existir uma conta com esse e-mail, enviamos um link de redefinição.
+        Confira também a caixa de spam.
+      </Alert>
     );
   }
 
   return (
-    <form action={formAction}>
-      <div>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-        />
-      </div>
-      {state.error && <p role="alert">{state.error}</p>}
-      <button type="submit" disabled={isPending}>
-        {isPending ? "Enviando..." : "Enviar link de redefinição"}
-      </button>
-    </form>
+    <Form action={formAction}>
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+      />
+
+      {state.error && <Alert variant="error">{state.error}</Alert>}
+
+      <SubmitButton fullWidth pendingLabel="Enviando...">
+        Enviar link de redefinição
+      </SubmitButton>
+    </Form>
   );
 }
