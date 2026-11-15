@@ -1,58 +1,49 @@
 "use client";
 
 import { useActionState } from "react";
+
 import { changePasswordAction } from "@/actions/auth/changePasswordAction";
 import { initialAuthState } from "@/actions/auth/authState";
+import Alert from "@/components/ui/alert/alert";
+import Form from "@/components/ui/form/form";
+import PasswordInput from "@/components/ui/passwordInput/passwordInput";
+import SubmitButton from "@/components/ui/submitButton/submitButton";
 
 export function ChangePasswordForm() {
-  const [state, formAction, pending] = useActionState(
+  const [state, formAction] = useActionState(
     changePasswordAction,
     initialAuthState,
   );
 
   return (
-    <form action={formAction}>
-      <h2>Alterar senha</h2>
+    <Form action={formAction}>
+      <PasswordInput
+        label="Senha atual"
+        name="currentPassword"
+        autoComplete="current-password"
+        required
+      />
 
-      <div>
-        <label htmlFor="currentPassword">Senha atual</label>
-        <input
-          id="currentPassword"
-          name="currentPassword"
-          type="password"
-          autoComplete="current-password"
-          required
-        />
-      </div>
+      <PasswordInput
+        label="Nova senha"
+        name="newPassword"
+        autoComplete="new-password"
+        required
+      />
 
-      <div>
-        <label htmlFor="newPassword">Nova senha</label>
-        <input
-          id="newPassword"
-          name="newPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-        />
-      </div>
+      <PasswordInput
+        label="Confirmar nova senha"
+        name="confirmPassword"
+        autoComplete="new-password"
+        required
+      />
 
-      <div>
-        <label htmlFor="confirmPassword">Confirmar nova senha</label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-        />
-      </div>
+      {state.error && <Alert variant="error">{state.error}</Alert>}
+      {state.success && (
+        <Alert variant="success">Senha alterada com sucesso.</Alert>
+      )}
 
-      {state.error && <p role="alert">{state.error}</p>}
-      {state.success && <p>Senha alterada com sucesso.</p>}
-
-      <button type="submit" disabled={pending}>
-        {pending ? "Alterando..." : "Alterar senha"}
-      </button>
-    </form>
+      <SubmitButton pendingLabel="Alterando...">Alterar senha</SubmitButton>
+    </Form>
   );
 }
