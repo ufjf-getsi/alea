@@ -1,5 +1,9 @@
 import { Suspense } from "react";
+
 import ResetPasswordForm from "@/components/auth/resetPasswordForm/resetPasswordForm";
+import AuthCard from "@/components/auth/authCard/authCard";
+import Alert from "@/components/ui/alert/alert";
+import { ButtonLink } from "@/components/ui/button/button";
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{
@@ -12,27 +16,30 @@ async function ResetPasswordContent({ searchParams }: ResetPasswordPageProps) {
 
   if (!token) {
     return (
-      <div>
-        <h1>Redefinir senha</h1>
-        <p>Token de redefinição inválido ou ausente.</p>
-      </div>
+      <AuthCard title="Redefinir senha">
+        <Alert variant="error">
+          O link de redefinição é inválido ou expirou. Solicite um novo link.
+        </Alert>
+        <ButtonLink href="/forgotPassword" fullWidth>
+          Solicitar novo link
+        </ButtonLink>
+      </AuthCard>
     );
   }
 
   return (
-    <div>
-      <h1>Redefinir senha</h1>
+    <AuthCard
+      title="Redefinir senha"
+      description="Escolha uma nova senha para sua conta."
+    >
       <ResetPasswordForm token={token} />
-    </div>
+    </AuthCard>
   );
 }
 
 function ResetPasswordSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Carregando redefinição de senha">
-      <h1>Redefinir senha</h1>
-      <p>Carregando formulário...</p>
-    </div>
+    <AuthCard title="Redefinir senha" description="Carregando formulário..." />
   );
 }
 
