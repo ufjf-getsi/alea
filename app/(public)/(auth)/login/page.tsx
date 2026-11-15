@@ -5,8 +5,7 @@ import TextLink from "@/components/ui/textLink/textLink";
 export default function LoginPage() {
   return (
     <AuthCard
-      title="Entrar"
-      description="Acesse sua conta para continuar."
+      title="Login"
       footer={
         <>
           <p>
