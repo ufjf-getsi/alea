@@ -1,11 +1,13 @@
 import { revokeAllSessionsAction } from "@/actions/auth/revokeAllSessionsAction";
+import Form from "@/components/ui/form/form";
+import SubmitButton from "@/components/ui/submitButton/submitButton";
 
 export function SignOutAllDevicesButton() {
   return (
-    <form action={revokeAllSessionsAction}>
-      <h2>Dispositivos</h2>
-      <p>Encerra sua sessão em todos os dispositivos, inclusive neste.</p>
-      <button type="submit">Desconectar todos os dispositivos</button>
-    </form>
+    <Form action={revokeAllSessionsAction}>
+      <SubmitButton variant="dangerSoft" pendingLabel="Desconectando...">
+        Desconectar todos os dispositivos
+      </SubmitButton>
+    </Form>
   );
 }
