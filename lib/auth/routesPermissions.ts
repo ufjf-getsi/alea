@@ -10,8 +10,7 @@ type RouteConfig = {
 export const ROUTES = {
   maps: {
     path: "/maps",
-    access: "protected",
-    permission: "protected-routes:view",
+    access: "public",
     navLabel: "Mapas",
   },
   about: {
