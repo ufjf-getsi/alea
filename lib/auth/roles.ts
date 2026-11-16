@@ -8,6 +8,13 @@ export const ROLE_LEVELS = {
 export type RoleName = keyof typeof ROLE_LEVELS;
 export type RoleLevel = (typeof ROLE_LEVELS)[RoleName];
 
+export const ROLE_LABELS: Record<RoleName, string> = {
+  USER: "Membro",
+  EDITOR: "Editor",
+  ADMIN: "Administrador",
+  SUPER_ADMIN: "Presidente",
+};
+
 export const PERMISSIONS = {
   "protected-routes:view": ROLE_LEVELS.USER,
   "maps:view": ROLE_LEVELS.USER,
@@ -46,5 +53,10 @@ export function getRoleName(level: number | null | undefined): RoleName {
   const entries = (Object.entries(ROLE_LEVELS) as [RoleName, number][]).sort(
     (a, b) => b[1] - a[1],
   );
+
   return entries.find(([, value]) => (level ?? 0) >= value)?.[0] ?? "USER";
+}
+
+export function getRoleLabel(level: number | null | undefined): string {
+  return ROLE_LABELS[getRoleName(level)];
 }

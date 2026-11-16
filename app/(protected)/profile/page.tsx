@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 
 import { requireSession } from "@/lib/auth/session";
-import { getRoleName } from "@/lib/auth/roles";
+import { getRoleLabel } from "@/lib/auth/roles";
+
 import { ChangePasswordForm } from "@/components/auth/changePasswordForm/changePasswordForm";
 import { SignOutAllDevicesButton } from "@/components/auth/signOutAllDevicesButton/signOutAllDevicesButton";
 
@@ -20,7 +21,7 @@ async function ProfileHeader() {
         {session.user.name}
       </Header>
 
-      <p className={styles.role}>{getRoleName(session.user.roleLevel)}</p>
+      <p className={styles.role}>{getRoleLabel(session.user.roleLevel)}</p>
     </div>
   );
 }
