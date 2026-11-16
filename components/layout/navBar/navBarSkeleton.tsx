@@ -21,6 +21,7 @@ export function NavBarSkeleton() {
 
           <div className={styles.user} aria-hidden="true">
             <div className={clsx(styles.skeleton, styles.skeletonLogin)} />
+            <div className={clsx(styles.skeleton, styles.skeletonSignUp)} />
           </div>
         </div>
       </nav>
