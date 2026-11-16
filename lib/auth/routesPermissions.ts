@@ -8,10 +8,11 @@ type RouteConfig = {
 };
 
 export const ROUTES = {
-  home: {
-    path: "/",
-    access: "public",
-    navLabel: "Home",
+  maps: {
+    path: "/maps",
+    access: "protected",
+    permission: "protected-routes:view",
+    navLabel: "Mapas",
   },
   about: {
     path: "/about",
@@ -35,28 +36,10 @@ export const ROUTES = {
     path: "/resetPassword",
     access: "public",
   },
-  maps: {
-    path: "/maps",
-    access: "protected",
-    permission: "protected-routes:view",
-    navLabel: "Mapas",
-  },
   profile: {
     path: "/profile",
     access: "protected",
     permission: "protected-routes:view",
-  },
-  teams: {
-    path: "/teams",
-    access: "protected",
-    permission: "protected-routes:view",
-    navLabel: "Equipes",
-  },
-  schedule: {
-    path: "/schedule",
-    access: "protected",
-    permission: "protected-routes:view",
-    navLabel: "Agenda",
   },
   admin: {
     path: "/admin",
