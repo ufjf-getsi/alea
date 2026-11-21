@@ -11,5 +11,9 @@ export default function PageContainer({
   children,
   className,
 }: Readonly<PageContainerProps>) {
-  return <div className={clsx(styles.container, className)}>{children}</div>;
+  return (
+    <div className={clsx("layout", styles.container, className)}>
+      {children}
+    </div>
+  );
 }
