@@ -18,6 +18,8 @@ import Input from "@/components/ui/input/input";
 import PasswordInput from "@/components/ui/passwordInput/passwordInput";
 import SubmitButton from "@/components/ui/submitButton/submitButton";
 
+import styles from "./signUpForm.module.css";
+
 const PASSWORD_MISMATCH_MESSAGE = "As senhas não coincidem.";
 
 export default function SignUpForm() {
@@ -81,13 +83,11 @@ export default function SignUpForm() {
           maxLength={PASSWORD_MAX_LENGTH}
         />
 
-        <div id="password-policy" className="text-sm text-muted-foreground">
-          <ul className="list-disc pl-5">
-            {PASSWORD_POLICY.map((rule) => (
-              <li key={rule}>{rule}</li>
-            ))}
-          </ul>
-        </div>
+        <ul id="password-policy" className={styles.policy}>
+          {PASSWORD_POLICY.map((rule) => (
+            <li key={rule}>{rule}</li>
+          ))}
+        </ul>
 
         {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
         {state.success && !clientError && (
