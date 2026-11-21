@@ -36,7 +36,6 @@
 }
 
 .text p {
-  margin: 0;
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -54,9 +53,6 @@
   .content {
     order: 1;
     grid-column: span 3;
-  }
-
-  .content {
     text-align: left;
   }
 

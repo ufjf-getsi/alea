@@ -2,7 +2,7 @@
   display: grid;
   place-items: center;
 
-  min-height: calc(100dvh - var(--header-height));
+  flex: 1;
   padding: 1rem 1rem 3rem;
 }
 
