@@ -1,0 +1,118 @@
+.trigger {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.popover {
+  position: fixed;
+  inset: auto;
+
+  top: calc(var(--header-height) + 0.5rem);
+  right: 1rem;
+
+  width: 14rem;
+  max-width: calc(100vw - 2rem);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  background: var(--background);
+  color: var(--foreground);
+
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.12);
+}
+
+.alignStart {
+  left: 1rem;
+  right: auto;
+}
+
+@supports (anchor-name: --a) {
+  .popover {
+    top: calc(anchor(bottom) + 0.5rem);
+    right: anchor(right);
+  }
+
+  .alignStart {
+    left: anchor(left);
+    right: auto;
+  }
+}
+
+.anchorUser {
+  anchor-name: --user-menu;
+}
+.anchorTheme {
+  anchor-name: --theme-menu;
+}
+.anchorNav {
+  anchor-name: --nav-menu;
+}
+
+.popoverUser {
+  position-anchor: --user-menu;
+}
+.popoverTheme {
+  position-anchor: --theme-menu;
+}
+.popoverNav {
+  position-anchor: --nav-menu;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--foreground);
+
+  font: inherit;
+  font-size: 0.95rem;
+
+  cursor: pointer;
+}
+
+.option:hover {
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+@media (min-width: 48rem) {
+  .mobileOnly {
+    display: none;
+  }
+}
+
+@media (min-width: 30rem) {
+  .onlyXs {
+    display: none;
+  }
+}
