@@ -1,6 +1,8 @@
 import Link from "next/link";
+import clsx from "clsx";
 import { logoutAction } from "@/actions/auth/logoutAction";
 import { LuCircleUserRound } from "react-icons/lu";
+import menu from "@/components/layout/navMenu/navMenu.module.css";
 import styles from "./userMenu.module.css";
 
 interface UserMenuProps {
@@ -14,7 +16,7 @@ export function UserMenu({ image }: UserMenuProps) {
     <>
       <button
         type="button"
-        className={styles.trigger}
+        className={clsx(menu.trigger, menu.anchorUser)}
         popoverTarget={popoverId}
         aria-label="Abrir menu do usuário"
       >
@@ -29,14 +31,18 @@ export function UserMenu({ image }: UserMenuProps) {
         )}
       </button>
 
-      <div id={popoverId} popover="auto" className={styles.popover}>
-        <div className={styles.content}>
-          <Link href="/profile" className={styles.option}>
+      <div
+        id={popoverId}
+        popover="auto"
+        className={clsx(menu.popover, menu.popoverUser)}
+      >
+        <div className={menu.content}>
+          <Link href="/profile" className={menu.option}>
             Minha conta
           </Link>
 
           <form action={logoutAction}>
-            <button type="submit" className={styles.option}>
+            <button type="submit" className={menu.option}>
               Sair
             </button>
           </form>
