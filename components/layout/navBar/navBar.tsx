@@ -2,11 +2,14 @@ import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { UserMenu } from "@/components/layout/userMenu/userMenu";
+import { MobileMenu } from "@/components/layout/mobileMenu/mobileMenu";
+import { ClosePopoversOnNavigate } from "@/components/layout/navBar/closePopoversOnNavigate";
 import styles from "./navBar.module.css";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/roles";
 import { NAV_ROUTES } from "@/lib/auth/routesPermissions";
 import logo from "@/assets/images/logo/logo.svg";
+import { ThemeMenu } from "@/components/layout/themeMenu/themeMenu";
 
 export async function NavBar() {
   const session = await getSession();
@@ -18,8 +21,10 @@ export async function NavBar() {
 
   return (
     <header className={styles.header}>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Principal">
         <div className={clsx(styles.container, "layout")}>
+          <MobileMenu links={visibleLinks} showSignUp={!user} />
+
           <Link href="/" className={styles.home} aria-label="Página inicial">
             <Image
               src={logo}
@@ -40,6 +45,7 @@ export async function NavBar() {
           </ul>
 
           <div className={styles.user}>
+            <ThemeMenu />
             {user ? (
               <UserMenu image={user.image} />
             ) : (
@@ -54,6 +60,7 @@ export async function NavBar() {
             )}
           </div>
         </div>
+        <ClosePopoversOnNavigate />
       </nav>
     </header>
   );
