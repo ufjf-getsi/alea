@@ -4,8 +4,9 @@ import { NavBar } from "@/components/layout/navBar/navBar";
 import { NavBarSkeleton } from "@/components/layout/navBar/navBarSkeleton";
 import "./globals.css";
 import { Suspense } from "react";
+import { themeInitScript } from "@/lib/theme/theme";
 
-const geistSans = Figtree({
+const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
 });
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} `}>
+    <html lang="pt-BR" className={figtree.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <Suspense fallback={<NavBarSkeleton />}>
           <NavBar />
