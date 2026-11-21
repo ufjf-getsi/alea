@@ -1,0 +1,17 @@
+.icon {
+  display: none;
+}
+
+.iconSystem {
+  display: block;
+}
+
+:global(html[data-theme="light"]) .iconSystem,
+:global(html[data-theme="dark"]) .iconSystem {
+  display: none;
+}
+
+:global(html[data-theme="light"]) .iconLight,
+:global(html[data-theme="dark"]) .iconDark {
+  display: block;
+}
