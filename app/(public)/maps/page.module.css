@@ -1,11 +1,10 @@
-.main {
-  box-sizing: border-box;
-  width: 95%;
+.container {
+  width: 100%;
   max-width: var(--max-layout);
-  margin: 0 auto;
-  height: calc(100dvh - 6rem);
+  height: calc(100dvh - var(--header-height));
   min-height: 30rem;
-  padding: 16px 0;
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
 }
 
 .loading {
@@ -13,5 +12,5 @@
   place-items: center;
   height: 100%;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--muted);
 }
