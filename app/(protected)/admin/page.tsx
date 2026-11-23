@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { LuChevronRight } from "react-icons/lu";
 
-import PageContainer from "@/components/layout/pageContainer/pageContainer";
-import Header from "@/components/ui/header/header";
+import AdminPage from "@/components/admin/adminPage/adminPage";
 import { requirePermission } from "@/lib/auth/session";
 import { can } from "@/lib/auth/roles";
 import { ADMIN_SECTIONS } from "@/lib/admin/sections";
@@ -12,20 +10,15 @@ import styles from "./page.module.css";
 
 export const metadata = { title: "Administração" };
 
-export default function AdminPage() {
+export default function AdminPageRoot() {
   return (
-    <PageContainer className={styles.page}>
-      <div className={styles.intro}>
-        <Header variant="section" as="h1">
-          Administração
-        </Header>
-        <p className={styles.muted}>O que você quer administrar?</p>
-      </div>
-
-      <Suspense fallback={<p className={styles.muted}>Carregando…</p>}>
-        <Sections />
-      </Suspense>
-    </PageContainer>
+    <AdminPage
+      root
+      title="Administração"
+      description="O que você quer administrar?"
+    >
+      <Sections />
+    </AdminPage>
   );
 }
 
