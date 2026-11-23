@@ -1,30 +1,25 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
   padding-block: 2rem 3rem;
 }
 
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .muted {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
 
-.search {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
-.searchField {
-  flex: 1 1 14rem;
-}
-
 .list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   gap: 0.75rem;
   list-style: none;
   padding: 0;
@@ -32,20 +27,29 @@
 
 .item {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
 
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 90%, transparent);
+
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
 }
 
-.info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  min-width: 0;
+.item:hover {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 100%, transparent);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .text {
@@ -55,30 +59,26 @@
   min-width: 0;
 }
 
-.badge {
-  align-self: flex-start;
-  padding: 0.25rem 0.625rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
+.title {
+  font-size: 1.125rem;
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+.chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 150ms ease;
 }
 
-@media (min-width: 40rem) {
-  .item {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+.item:hover .chevron {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
   }
 
-  .info {
-    flex: 1;
+  .item:hover .chevron {
+    transform: none;
   }
 }
