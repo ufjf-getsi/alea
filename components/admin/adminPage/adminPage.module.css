@@ -1,0 +1,18 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-block: 2rem 3rem;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
