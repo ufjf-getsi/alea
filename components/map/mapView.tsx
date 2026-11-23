@@ -48,6 +48,12 @@ L.Icon.Default.mergeOptions({
 const NOTICE_MS = 5000;
 
 export default function MapView({ canEdit }: { canEdit: boolean }) {
+  const [mapAlive, setMapAlive] = useState(false);
+  useEffect(() => {
+    setMapAlive(true);
+    return () => setMapAlive(false);
+  }, []);
+
   const [state, dispatch] = useReducer(mapReducer, initialMapState);
   const [minimized, setMinimized] = useState(false);
 
@@ -205,44 +211,46 @@ export default function MapView({ canEdit }: { canEdit: boolean }) {
         </div>
       )}
 
-      <MapContainer
-        center={DEFAULT_CENTER}
-        zoom={DEFAULT_ZOOM}
-        className={styles.map}
-      >
-        <BaseLayers />
-        <LocateControl onError={setNotice} />
-        <ViewportWatcher onChange={onBoundsChange} />
-        <ClickHandler
-          enabled={state.status === "drawing"}
-          onClick={handleMapClick}
-        />
-
-        <PersistedLayers
-          markers={features.markers}
-          regions={features.regions}
-          selectedId={selected?.id ?? null}
-          hiddenId={ctx?.editingId ?? null}
-          dimmed={drawing}
-          onSelect={select}
-        />
-
-        {ctx && (
-          <DraftLayer
-            mode={ctx.kind}
-            points={ctx.draft.points}
-            editing={editing}
-            selectedVertex={ctx.draft.selectedVertex}
-            onMove={(index, point) =>
-              dispatch({ type: "moveVertex", index, point })
-            }
-            onInsert={(index, point) =>
-              dispatch({ type: "insertVertex", index, point })
-            }
-            onSelect={(index) => dispatch({ type: "selectVertex", index })}
+      {mapAlive && (
+        <MapContainer
+          center={DEFAULT_CENTER}
+          zoom={DEFAULT_ZOOM}
+          className={styles.map}
+        >
+          <BaseLayers />
+          <LocateControl onError={setNotice} />
+          <ViewportWatcher onChange={onBoundsChange} />
+          <ClickHandler
+            enabled={state.status === "drawing"}
+            onClick={handleMapClick}
           />
-        )}
-      </MapContainer>
+
+          <PersistedLayers
+            markers={features.markers}
+            regions={features.regions}
+            selectedId={selected?.id ?? null}
+            hiddenId={ctx?.editingId ?? null}
+            dimmed={drawing}
+            onSelect={select}
+          />
+
+          {ctx && (
+            <DraftLayer
+              mode={ctx.kind}
+              points={ctx.draft.points}
+              editing={editing}
+              selectedVertex={ctx.draft.selectedVertex}
+              onMove={(index, point) =>
+                dispatch({ type: "moveVertex", index, point })
+              }
+              onInsert={(index, point) =>
+                dispatch({ type: "insertVertex", index, point })
+              }
+              onSelect={(index) => dispatch({ type: "selectVertex", index })}
+            />
+          )}
+        </MapContainer>
+      )}
 
       {canEdit && ctx && (
         <DrawPanel
