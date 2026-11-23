@@ -60,3 +60,20 @@ export function getRoleName(level: number | null | undefined): RoleName {
 export function getRoleLabel(level: number | null | undefined): string {
   return ROLE_LABELS[getRoleName(level)];
 }
+
+export function canManageUser(
+  actorLevel: number | null | undefined,
+  targetLevel: number | null | undefined,
+): boolean {
+  return (actorLevel ?? 0) > (targetLevel ?? 0);
+}
+
+export function assignableRoles(actorLevel: number | null | undefined) {
+  return (Object.keys(ROLE_LEVELS) as RoleName[])
+    .filter((name) => ROLE_LEVELS[name] < (actorLevel ?? 0))
+    .map((name) => ({
+      name,
+      level: ROLE_LEVELS[name],
+      label: ROLE_LABELS[name],
+    }));
+}

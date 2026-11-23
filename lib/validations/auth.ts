@@ -95,3 +95,8 @@ export const changePasswordSchema = z
     message: "A nova senha deve ser diferente da atual.",
     path: ["newPassword"],
   });
+
+export const updateUserRoleSchema = z.object({
+  userId: z.string().min(1),
+  roleLevel: z.coerce.number().int(),
+});
