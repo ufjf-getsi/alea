@@ -1,0 +1,30 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.select {
+  flex: 1;
+  min-height: 2.25rem;
+  padding-inline: 0.5rem;
+
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+
+  background: var(--field-bg);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
