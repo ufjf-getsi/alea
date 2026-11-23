@@ -1,4 +1,4 @@
-import { getMapData } from "@/lib/maps/server/queries";
+import { getMapData } from "@/data/maps";
 import { bboxSchema } from "@/lib/validations/maps";
 
 const NO_STORE = { "Cache-Control": "no-store" };

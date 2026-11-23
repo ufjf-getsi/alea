@@ -5,7 +5,7 @@ import { db } from "@/db/db";
 import { mapMarker, mapRegion } from "@/db/schema";
 import { MAP_CACHE_TAG } from "@/lib/maps/mapConfig";
 import { fromPointGeometry, fromPolygonGeometry } from "@/lib/maps/geo";
-import { parsePoint, parsePolygon } from "./projections";
+import { parsePoint, parsePolygon } from "@/lib/maps/server/projections";
 import type { BBox, MapData } from "@/lib/maps/types";
 
 const MAX_RESULTS = 500;
