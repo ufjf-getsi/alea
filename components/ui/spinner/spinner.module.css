@@ -1,0 +1,69 @@
+.root {
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.spinner {
+  display: block;
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+
+  border: var(--spinner-thickness) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+
+  animation: spinner-spin 700ms linear infinite;
+}
+
+.inline {
+  --spinner-size: 1em;
+  --spinner-thickness: 2px;
+}
+
+.sm {
+  --spinner-size: 1.25rem;
+  --spinner-thickness: 2px;
+}
+
+.md {
+  --spinner-size: 2rem;
+  --spinner-thickness: 3px;
+}
+
+.lg {
+  --spinner-size: 3rem;
+  --spinner-thickness: 4px;
+}
+
+.page {
+  position: fixed;
+  inset: var(--header-height) 0 0 0;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--link);
+  pointer-events: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
