@@ -1,8 +1,7 @@
-import { Suspense } from "react";
+import LoadingBoundary from "@/components/ui/loadingBoundary/loadingBoundary";
 import { getFreshSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/roles";
 import { MapLoader } from "@/components/map/mapLoader";
-import styles from "./page.module.css";
 
 async function MapSection() {
   const session = await getFreshSession();
@@ -12,12 +11,8 @@ async function MapSection() {
 
 export default function MapsPage() {
   return (
-    <main className={styles.main}>
-      <Suspense
-        fallback={<div className={styles.loading}>Carregando mapa…</div>}
-      >
-        <MapSection />
-      </Suspense>
-    </main>
+    <LoadingBoundary>
+      <MapSection />
+    </LoadingBoundary>
   );
 }
