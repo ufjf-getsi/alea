@@ -11,6 +11,7 @@ import Card from "@/components/ui/card/card";
 import Header from "@/components/ui/header/header";
 
 import styles from "./page.module.css";
+import Spinner from "@/components/ui/spinner/spinner";
 
 async function ProfileHeader() {
   const session = await requireSession();
@@ -33,7 +34,7 @@ export default function ProfilePage() {
         <Suspense
           fallback={
             <Header as="h1" variant="section">
-              Perfil
+              <Spinner />
             </Header>
           }
         >
