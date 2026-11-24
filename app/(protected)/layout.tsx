@@ -1,4 +1,6 @@
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
+
+import LoadingBoundary from "@/components/ui/loadingBoundary/loadingBoundary";
 import { requirePermission } from "@/lib/auth/session";
 
 type ProtectedLayoutProps = {
@@ -11,18 +13,10 @@ async function AuthorizedContent({ children }: ProtectedLayoutProps) {
   return children;
 }
 
-function ProtectedFallback() {
-  return (
-    <main aria-busy="true" aria-label="Carregando conteúdo">
-      <p>Carregando...</p>
-    </main>
-  );
-}
-
 export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   return (
-    <Suspense fallback={<ProtectedFallback />}>
+    <LoadingBoundary>
       <AuthorizedContent>{children}</AuthorizedContent>
-    </Suspense>
+    </LoadingBoundary>
   );
 }
