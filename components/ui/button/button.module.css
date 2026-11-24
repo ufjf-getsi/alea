@@ -103,28 +103,3 @@
 .dangerSoft:hover:not(:disabled) {
   background: color-mix(in srgb, var(--danger) 18%, transparent);
 }
-
-.spinner {
-  flex-shrink: 0;
-
-  width: 1em;
-  height: 1em;
-
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-
-  animation: button-spin 700ms linear infinite;
-}
-
-@keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2s;
-  }
-}

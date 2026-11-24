@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import clsx from "clsx";
+import Spinner from "@/components/ui/spinner/spinner";
 
 import styles from "./button.module.css";
 
@@ -59,7 +60,7 @@ export default function Button({
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading ? <span className={styles.spinner} aria-hidden="true" /> : icon}
+      {loading ? <Spinner size="inline" /> : icon}
       {children}
     </button>
   );
