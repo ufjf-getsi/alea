@@ -1,8 +1,7 @@
-import { Suspense } from "react";
-
 import ResetPasswordForm from "@/components/auth/resetPasswordForm/resetPasswordForm";
 import AuthCard from "@/components/auth/authCard/authCard";
 import Alert from "@/components/ui/alert/alert";
+import LoadingBoundary from "@/components/ui/loadingBoundary/loadingBoundary";
 import { ButtonLink } from "@/components/ui/button/button";
 
 type ResetPasswordPageProps = {
@@ -37,18 +36,12 @@ async function ResetPasswordContent({ searchParams }: ResetPasswordPageProps) {
   );
 }
 
-function ResetPasswordSkeleton() {
-  return (
-    <AuthCard title="Redefinir senha" description="Carregando formulário..." />
-  );
-}
-
 export default function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
   return (
-    <Suspense fallback={<ResetPasswordSkeleton />}>
+    <LoadingBoundary>
       <ResetPasswordContent searchParams={searchParams} />
-    </Suspense>
+    </LoadingBoundary>
   );
 }
