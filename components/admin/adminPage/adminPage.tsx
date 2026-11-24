@@ -1,10 +1,11 @@
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import PageContainer from "@/components/layout/pageContainer/pageContainer";
 import Header from "@/components/ui/header/header";
 import Breadcrumbs, {
   type BreadcrumbItem,
 } from "@/components/ui/breadcrumbs/breadcrumbs";
+import LoadingBoundary from "@/components/ui/loadingBoundary/loadingBoundary";
 
 import styles from "./adminPage.module.css";
 
@@ -41,9 +42,7 @@ export default function AdminPage({
         {description && <p className={styles.muted}>{description}</p>}
       </div>
 
-      <Suspense fallback={<p className={styles.muted}>Carregando…</p>}>
-        {children}
-      </Suspense>
+      <LoadingBoundary>{children}</LoadingBoundary>
     </PageContainer>
   );
 }
